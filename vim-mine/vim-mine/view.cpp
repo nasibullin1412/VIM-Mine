@@ -19,7 +19,7 @@ ConsoleView::~ConsoleView()
 {
 }
 
-void ConsoleView::InitAllPointers(AdapterPDCur* tui_object, std::vector<std::vector<int>>* p_symbol_map,int *P_cur_position, Position* p_last_position_, Position* p_cur_position_)
+void ConsoleView::InitAllPointers(AdapterPDCur* tui_object, std::vector<std::vector<int>>* p_symbol_map, Position* p_last_position_, Position* p_cur_position_)
 {
 	this->tui_object = tui_object;
 	this->p_symbol_map_ = p_symbol_map;
@@ -90,14 +90,26 @@ int ConsoleView::KeyDown()
 	this->tui_object->GetYX(this->p_cur_position_->y, this->p_cur_position_->x);
 	if (this->p_cur_position_->y == this->p_symbol_map_->size() - 1)
 	{
-		return;
+		return  this->p_symbol_map_->operator[](this->p_cur_position_->y)[this->p_cur_position_->x];
 	}
 	this->DownCursor(false, this->p_cur_position_->y, this->p_cur_position_->x);
-	while (this->p_symbol_map_->operator[](this->p_cur_position_->y)[this->p_cur_position_->x] == -1)
+	while (this->p_cur_position_->x > 0 && this->p_symbol_map_->operator[](this->p_cur_position_->y)[this->p_cur_position_->x-1] == -1)
 	{
 		--this->p_cur_position_->x;
 	}
+	int index = this->p_symbol_map_->operator[](this->p_cur_position_->y)[this->p_cur_position_->x];
+	if (index == -1)
+	{
+		if (this->p_cur_position_->x == 0)
+		{
+			if (this->p_cur_position_->y != 0)
+			{
+				index = this->p_symbol_map_->operator[](this->p_cur_position_->y - 1)[winparam::n_postion];
+			}
+		}
+	}
 	tui_object->WMove(this->p_cur_position_->y, this->p_cur_position_->x);
+	return index;
 }
 
 int ConsoleView::KeyLeft()
@@ -106,8 +118,20 @@ int ConsoleView::KeyLeft()
 	do
 	{
 		this->PrevCursorPos(this->p_cur_position_->y, this->p_cur_position_->x);
-	} while (this->p_symbol_map_->operator[](this->p_cur_position_->y)[this->p_cur_position_->x] == -1);
+	} while (this->p_cur_position_->x > 0 && this->p_symbol_map_->operator[](this->p_cur_position_->y)[this->p_cur_position_->x-1] == -1);
+	int index = this->p_symbol_map_->operator[](this->p_cur_position_->y)[this->p_cur_position_->x];
+	if (index == -1)
+	{
+		if (this->p_cur_position_->x == 0)
+		{
+			if (this->p_cur_position_->y != 0)
+			{
+				index = this->p_symbol_map_->operator[](this->p_cur_position_->y - 1)[winparam::n_postion];
+			}
+		}
+	}
 	tui_object->WMove(this->p_cur_position_->y, this->p_cur_position_->x);
+	return index;
 }
 
 
@@ -116,13 +140,25 @@ int ConsoleView::KeyRight()
 	tui_object->GetYX(this->p_cur_position_->y, this->p_cur_position_->x);
 	if (this->p_last_position_->y == p_cur_position_->y && this->p_cur_position_->x == p_cur_position_->x)
 	{
-		return;
+		return  this->p_symbol_map_->operator[](this->p_cur_position_->y)[this->p_cur_position_->x];
 	}
 	do
 	{
 		this->NextCursorPos(this->p_cur_position_->y, this->p_cur_position_->x);
-	} while (this->p_symbol_map_->operator[](this->p_cur_position_->y)[this->p_cur_position_->x] == -1);
+	} while (this->p_cur_position_->x > 0 && this->p_symbol_map_->operator[](this->p_cur_position_->y)[this->p_cur_position_->x - 1] == -1);
+	int index = this->p_symbol_map_->operator[](this->p_cur_position_->y)[this->p_cur_position_->x];
+	if (index == -1)
+	{
+		if (this->p_cur_position_->x == 0)
+		{
+			if (this->p_cur_position_->y != 0)
+			{
+				index = this->p_symbol_map_->operator[](this->p_cur_position_->y - 1)[winparam::n_postion];
+			}
+		}
+	}
 	tui_object->WMove(this->p_cur_position_->y, this->p_cur_position_->x);
+	return index;
 }
 
 
@@ -234,4 +270,50 @@ void ConsoleView::PrintScreen(MyString& text, const bool new_string, int index)
 	{
 		this->p_symbol_map_->operator[](y)[x] = static_cast<int>(size);
 	}
+	
+}
+
+void ConsoleView::ClearScreen()
+{
+	this->tui_object->ClrToBot();
+}
+
+void ConsoleView::CheckNewLine()
+{
+	if (this->p_cur_position_->x == winparam::weight - 1)
+	{
+		std::vector<int> new_line = this->CreateNewLine();
+		this->p_symbol_map_->emplace_back(new_line);
+	}
+}
+
+void ConsoleView::DoRefreash()
+{
+	this->tui_object->PRefresh();
+}
+
+int ConsoleView::CurPosition()
+{
+	int y = this->p_cur_position_->y;
+	int x = this->p_cur_position_->x;
+	int index = this->p_symbol_map_->operator[](y)[x];
+	if (index == -1)
+	{
+		if (y != 0 && x == 0)
+		{
+			index = this->p_symbol_map_->operator[](y - 1)[winparam::n_postion] + 1;
+		}
+		else
+		{
+			if (x != 0)
+			{
+				index = this->p_symbol_map_->operator[](y)[x - 1] + 1;
+			}
+		}
+	}
+	if (index == -1)
+	{
+		exit(-1);
+	}
+	return index;
 }

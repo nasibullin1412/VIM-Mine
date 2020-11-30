@@ -39,6 +39,12 @@
     <ClCompile Include="postion.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="editmode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="entersymbolmode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="observ.h">
@@ -66,6 +72,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="postion.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="editmode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="entersymbolmode.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

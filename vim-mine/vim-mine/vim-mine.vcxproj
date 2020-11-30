@@ -141,6 +141,8 @@
   <ItemGroup>
     <ClCompile Include="adapterpdcur.cpp" />
     <ClCompile Include="controller.cpp" />
+    <ClCompile Include="editmode.cpp" />
+    <ClCompile Include="entersymbolmode.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mainmode.cpp" />
     <ClCompile Include="mystring.cpp" />
@@ -152,6 +154,8 @@
     <ClInclude Include="adapterpdcur.h" />
     <ClInclude Include="controller.h" />
     <ClInclude Include="curses.h" />
+    <ClInclude Include="editmode.h" />
+    <ClInclude Include="entersymbolmode.h" />
     <ClInclude Include="mainmode.h" />
     <ClInclude Include="mystring.h" />
     <ClInclude Include="observ.h" />

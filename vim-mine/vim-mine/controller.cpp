@@ -6,7 +6,7 @@
 
 
 
-Controller::Controller(std::vector<MainMode*>* model, AdapterPDCur &tui_object)
+Controller::Controller(std::vector<MainMode*>* model, AdapterPDCur *tui_object)
 {
 	this->model_ = model;
 	this->tui_object = tui_object;
@@ -24,10 +24,10 @@ Controller::~Controller()
 void Controller::start()
 {
 	
-	this->tui_object.InitScr();
-	this->tui_object.NewPad(winparam::real_size, winparam::weight);
-	this->tui_object.PRefresh();
-	this->tui_object.Keypad(true);
+	this->tui_object->InitScr();
+	this->tui_object->NewPad(winparam::real_size, winparam::weight);
+	this->tui_object->PRefresh();
+	this->tui_object->Keypad(true);
 	while (true)
 	{
 		this->ReadSymbol();
@@ -35,9 +35,9 @@ void Controller::start()
 		{
 		case ModeType::EDIT_MODE:
 		{
-			if (this->model_->operator[](static_cast<size_t>(ModeType::EDIT_MODE))->HandleAction(this->command_, this->tui_object))
+			if (this->model_->operator[](static_cast<size_t>(ModeType::EDIT_MODE))->HandleAction(this->command_))
 			{
-				ModeType temp_type = this->model_->operator[](static_cast<size_t>(ModeType::EDIT_MODE))->DoAction(this->tui_object);
+				ModeType temp_type = this->model_->operator[](static_cast<size_t>(ModeType::EDIT_MODE))->DoAction();
 				this->ChangeType(temp_type);
 			}
 			break;
@@ -52,9 +52,9 @@ void Controller::start()
 		}
 		case ModeType::ENTER_SYM_MODE:
 		{
-			if (this->model_->operator[](static_cast<size_t>(ModeType::ENTER_SYM_MODE))->HandleAction(this->command_, this->tui_object))
+			if (this->model_->operator[](static_cast<size_t>(ModeType::ENTER_SYM_MODE))->HandleAction(this->command_))
 			{
-				ModeType temp_type = this->model_->operator[](static_cast<size_t>(ModeType::ENTER_SYM_MODE))->DoAction(this->tui_object);
+				ModeType temp_type = this->model_->operator[](static_cast<size_t>(ModeType::ENTER_SYM_MODE))->DoAction();
 				this->ChangeType(temp_type);
 			}
 		}
@@ -67,10 +67,10 @@ void Controller::start()
 
 bool Controller::ReadSymbol()
 {
-	this->tui_object.NoEcho();
+	this->tui_object->NoEcho();
 	int symbol = 0;
-	symbol = this->tui_object.GetCh();
-	this->tui_object.Echo();
+	symbol = this->tui_object->GetCh();
+	this->tui_object->Echo();
 	this->command_.AppEnd(1, static_cast<char>(symbol));
 	return true;
 }

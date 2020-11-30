@@ -9,12 +9,12 @@
 class Controller
 {
 public:
-    Controller(std::vector<MainMode*>* model, AdapterPDCur& tui_object);
+    Controller(std::vector<MainMode*>* model, AdapterPDCur* tui_object);
     ~Controller();
     void start();
 private:
     std::vector<MainMode*> *model_;
-    AdapterPDCur tui_object;
+    AdapterPDCur *tui_object;
 	MyString command_;
     ModeType mode_type_;
 	bool ReadSymbol();

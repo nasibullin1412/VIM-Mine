@@ -24,12 +24,16 @@ enum class SpecialKeys
 class Observer
 {
 public:
-	virtual int		PrintScreen(MyString &text, const bool new_string, int index) = 0;
+	virtual void	PrintScreen(MyString &text, const bool new_string, int index) = 0;
+	virtual void	ClearScreen() = 0;
+	virtual void	CheckNewLine() = 0;
+	virtual void	DoRefreash() = 0;
 	virtual int 	UpdateKeys(MyString &string_, const SpecialKeys type) = 0;
 	virtual int 	KeyUp() = 0;
 	virtual int 	KeyDown() = 0;
 	virtual int		KeyLeft() = 0;
 	virtual int		KeyRight() = 0;
+	virtual int		CurPosition() = 0;
 	
 
 
@@ -41,7 +45,11 @@ public:
 		~Observable();
 	void	AddObserver(Observer* observer);
 	int		NotifyUpdateKeys(MyString& string_, const SpecialKeys type_);
-	int		NotifyPrintScreen(MyString& text, const bool new_string, int index);
+	int		NotifyCurPosition();
+	void	NotifyPrintScreen(MyString& text, const bool new_string, int index);
+	void	NotifyClearScreen();
+	void	NotifyCheckNewLine();
+	void	NotifyDoRefreash();
 
 
 private:
