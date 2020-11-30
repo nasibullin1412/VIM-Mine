@@ -6,10 +6,9 @@
 
 
 
-Controller::Controller(std::vector<MainMode*>* model, AdapterPDCur *tui_object)
+Controller::Controller(std::vector<MainMode*>* model)
 {
 	this->model_ = model;
-	this->tui_object = tui_object;
 	this->mode_type_ = ModeType::EDIT_MODE;
 	this->command_;
 }
@@ -18,62 +17,18 @@ Controller::~Controller()
 {
 }
 
-
-
-
-void Controller::start()
+bool Controller::InfoController(const int index, const char symbol)
 {
-	
-	this->tui_object->InitScr();
-	this->tui_object->NewPad(winparam::real_size, winparam::weight);
-	this->tui_object->PRefresh();
-	this->tui_object->Keypad(true);
-	while (true)
+	this->command_.AppEnd(1, symbol);
+	if (this->model_->operator[](static_cast<size_t>(this->mode_type_))->HandleAction(this->command_))
 	{
-		this->ReadSymbol();
-		switch (this->mode_type_)
-		{
-		case ModeType::EDIT_MODE:
-		{
-			if (this->model_->operator[](static_cast<size_t>(ModeType::EDIT_MODE))->HandleAction(this->command_))
-			{
-				ModeType temp_type = this->model_->operator[](static_cast<size_t>(ModeType::EDIT_MODE))->DoAction();
-				this->ChangeType(temp_type);
-			}
-			break;
-		}
-		case ModeType::ENTER_COM_MODE:
-		{
-
-		}
-		case ModeType::SEARCH_MODE:
-		{
-
-		}
-		case ModeType::ENTER_SYM_MODE:
-		{
-			if (this->model_->operator[](static_cast<size_t>(ModeType::ENTER_SYM_MODE))->HandleAction(this->command_))
-			{
-				ModeType temp_type = this->model_->operator[](static_cast<size_t>(ModeType::ENTER_SYM_MODE))->DoAction();
-				this->ChangeType(temp_type);
-			}
-		}
-		default:
-			break;
-		}
+		ModeType temp_type = this->model_->operator[](static_cast<size_t>(this->mode_type_))->DoAction(index);
+		this->ChangeType(temp_type);
 	}
-	return;
+	return false;
 }
 
-bool Controller::ReadSymbol()
-{
-	this->tui_object->NoEcho();
-	int symbol = 0;
-	symbol = this->tui_object->GetCh();
-	this->tui_object->Echo();
-	this->command_.AppEnd(1, static_cast<char>(symbol));
-	return true;
-}
+
 
 void Controller::ChangeType(const ModeType& new_mode)
 {

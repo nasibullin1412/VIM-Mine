@@ -28,13 +28,9 @@ public:
 	virtual void	ClearScreen() = 0;
 	virtual void	CheckNewLine() = 0;
 	virtual void	DoRefreash() = 0;
-	virtual int 	UpdateKeys(MyString &string_, const SpecialKeys type) = 0;
-	virtual int 	KeyUp() = 0;
-	virtual int 	KeyDown() = 0;
-	virtual int		KeyLeft() = 0;
-	virtual int		KeyRight() = 0;
-	virtual int		CurPosition() = 0;
-	
+	virtual void	NextCur() = 0;
+	virtual void	PrevCur() = 0;
+	virtual void	NewString(MyString& text) = 0;
 
 
 };
@@ -44,16 +40,17 @@ class Observable
 public:
 		~Observable();
 	void	AddObserver(Observer* observer);
-	int		NotifyUpdateKeys(MyString& string_, const SpecialKeys type_);
-	int		NotifyCurPosition();
 	void	NotifyPrintScreen(MyString& text, const bool new_string, int index);
 	void	NotifyClearScreen();
 	void	NotifyCheckNewLine();
 	void	NotifyDoRefreash();
+	void	NotifyNextCurs();
+	void	NotifyPrevCurs();
+	void	NotifyNewString(MyString& text);
 
 
 private:
-	std::vector<Observer*> _observers;
+	std::vector<Observer*> observers_;
 };
 
 

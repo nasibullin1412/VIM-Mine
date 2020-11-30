@@ -9,16 +9,15 @@
 class Controller
 {
 public:
-    Controller(std::vector<MainMode*>* model, AdapterPDCur* tui_object);
+    Controller(std::vector<MainMode*>* model);
     ~Controller();
-    void start();
+
+    bool          InfoController(const int index, const char symbol);
 private:
-    std::vector<MainMode*> *model_;
-    AdapterPDCur *tui_object;
-	MyString command_;
-    ModeType mode_type_;
-	bool ReadSymbol();
-    void ChangeType(const ModeType &new_mode);
+    std::vector<MainMode*>*     model_;
+    MyString                    command_;
+    ModeType                    mode_type_;
+    void                        ChangeType(const ModeType &new_mode);
 };
 
 #endif

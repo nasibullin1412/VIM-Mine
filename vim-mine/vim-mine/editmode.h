@@ -26,12 +26,6 @@ enum class ActionType
 	GO_TO_COMMAND_MODE,
 	GO_TO_FIND_MODE_TO_END,
 	GO_TO_FIND_MODE_TO_BEGIN,
-	CURSOR_UP,
-	CURSOR_DOWN,
-	CURSOR_RIGHT,
-	CURSOR_LEFT,
-	MOVE_CURSOR_UP,
-	MOVE_CURSOR_DOWN,
 };
 
 namespace editm
@@ -48,7 +42,7 @@ public:
 	EditMode();
 	~EditMode();
 	virtual bool HandleAction(MyString &command);
-	virtual ModeType DoAction();
+	virtual ModeType DoAction(int index);
 private:
 	ActionType type_;
 	/*void KeyUp(AdapterPDCur& tui_object);

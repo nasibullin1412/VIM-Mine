@@ -1,7 +1,5 @@
 #include "controller.h"
 #include "editmode.h"
-//#include "entercommandmode.h"
-//#include "searchmode.h"
 #include "entersymbolmode.h"
 #include "view.h"
 
@@ -17,26 +15,24 @@ int main()
 	std::vector<int> first_string(winparam::weight + 2, -1);
 	first_string[0] = 0;
 	map.emplace_back(first_string);
+	ConsoleView view_;
+
 	EditMode obj;
-	obj.InitAllPointers(&text_, &index);
+	obj.AddObserver(&view_);
+	obj.InitAllPointers(&text_);
 	list_.emplace_back(&obj);
 
-
-
-
 	EnterSymbolMode obj_last;
-	obj_last.InitAllPointers(&text_, &index);
-	
-	
-	
+	obj_last.AddObserver(&view_);
+	obj_last.InitAllPointers(&text_);
+
 	list_.emplace_back(&obj_last);
 	AdapterPDCur tui_object;
+	Controller contr_object(&list_);
+	view_.InitAllPointers(&tui_object, &map, &last_position, &cur_position, &contr_object);
+	view_.BeginExecute();
 
-	ConsoleView view_(&list_);
-	view_.InitAllPointers(&tui_object, &map, &last_position, &cur_position);
-	Controller contrl_(&list_, &tui_object);
-	contrl_.start();
-
+	
 
 
 }

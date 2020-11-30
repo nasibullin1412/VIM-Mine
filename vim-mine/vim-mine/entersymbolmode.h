@@ -30,15 +30,16 @@ public:
 	EnterSymbolMode();
 	~EnterSymbolMode();
 	virtual bool HandleAction(MyString& command);
-	virtual ModeType DoAction();
+	virtual ModeType DoAction(int index);
 
 
 private:
-	SymbolModeActions type_;
-	bool is_first;
-	char new_symbol_;
-	void EnterSymbol();
-	//void NewString(AdapterPDCur& tui_object);
+	SymbolModeActions		type_;
+	bool					is_first;
+	char					new_symbol_;
+	int						index;
+	void					EnterSymbol();
+	void					NewString();
 	//void DeleteSymbol(AdapterPDCur& tui_object);
 	//void PrintScreen(AdapterPDCur& tui_object, const bool new_string);
 };

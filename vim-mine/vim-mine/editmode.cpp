@@ -13,30 +13,6 @@ EditMode::~EditMode()
 bool EditMode::HandleAction(MyString& command)
 {
 	size_t i = 0;
-	int com = command[0];
-	switch (com)
-	{
-	case keys::key_up:
-		this->type_ = ActionType::CURSOR_UP;
-		return true;
-	case keys::key_pg_up:
-		this->type_ = ActionType::MOVE_CURSOR_UP;
-		return true;
-	case keys::key_pg_down:
-		this->type_ = ActionType::MOVE_CURSOR_DOWN;
-		return true;
-	case keys::key_left:
-		this->type_ = ActionType::CURSOR_LEFT;
-		return true;
-	case keys::key_right:
-		this->type_ = ActionType::CURSOR_RIGHT;
-		return true;
-	case keys::key_down:
-		this->type_ = ActionType::CURSOR_DOWN;
-		return true;
-	default:
-		break;
-	}
 	for (i; i < editm::number_of_check; i++)
 	{
 		if (command.Find(editm::check_commands[i].CStr()) != editm::not_found)
@@ -120,40 +96,10 @@ bool EditMode::HandleAction(MyString& command)
 
 
 
-ModeType EditMode::DoAction()
+ModeType EditMode::DoAction(int index)
 {
 	switch (this->type_)
 	{
-	case ActionType::CURSOR_UP:
-	{
-		*this->p_index_ = this->NotifyUpdateKeys(*this->text_, SpecialKeys::CURSOR_UP);
-		break;
-	}
-	case ActionType::CURSOR_DOWN:
-	{
-		*this->p_index_ = this->NotifyUpdateKeys(*this->text_, SpecialKeys::CURSOR_DOWN);
-		break;
-	}
-	case ActionType::CURSOR_LEFT:
-	{
-		*this->p_index_ = this->NotifyUpdateKeys(*this->text_, SpecialKeys::CURSOR_LEFT);
-		break;
-	}
-	case ActionType::CURSOR_RIGHT:
-	{
-		*this->p_index_ = this->NotifyUpdateKeys(*this->text_, SpecialKeys::CURSOR_RIGHT);
-		break;
-	}
-	case ActionType::MOVE_CURSOR_UP:
-	{
-		cout << "U";
-		break;
-	}
-	case ActionType::MOVE_CURSOR_DOWN:
-	{
-		cout << "D";
-		break;
-	}
 	case ActionType::GO_TO_ENTER_MODE:
 	{
 		return ModeType::ENTER_SYM_MODE;
