@@ -97,13 +97,7 @@ int ConsoleView::SetActualIndex(const char symbol)
 	this->tui_object->GetYX(y, x);
 	if (x != 0 || y == 0 || this->p_symbol_map_->operator[](y - 1)[1] != winparam::weight + 1 || symbol == '\n')
 	{
-		/*if (y != 0)
-		{
-			if (this->p_symbol_map_->operator[](y - 1)[1] == winparam::weight + 1)
-			{
-				
-			}
-		}*/
+	
 		this->index_ = this->p_symbol_map_->operator[](y)[0] + x;
 	}
 	else
@@ -178,10 +172,29 @@ void ConsoleView::KeyUp()
 void ConsoleView::KeyDown()
 {
 	this->tui_object->GetYX(this->p_cur_position_->y, this->p_cur_position_->x);
-	this->DownCursor(false, this->p_cur_position_->y, this->p_cur_position_->x);
-	if (this->p_cur_position_->x > this->p_symbol_map_->operator[](this->p_cur_position_->y)[1])
+	if (this->p_cur_position_->y != this->p_last_position_->y)
 	{
-		this->p_cur_position_->x = this->p_symbol_map_->operator[](this->p_cur_position_->y)[1] + 1;
+		
+		this->DownCursor(false, this->p_cur_position_->y, this->p_cur_position_->x);
+		
+		if (this->p_cur_position_->x > this->p_symbol_map_->operator[](this->p_cur_position_->y)[1])
+		{
+			if (this->p_cur_position_->y == this->p_last_position_->y || this->p_symbol_map_->operator[](this->p_cur_position_->y)[1] != 1)
+			{
+				if (this->p_cur_position_->y == this->p_last_position_->y)
+				{
+					this->p_cur_position_->x = this->p_symbol_map_->operator[](this->p_cur_position_->y)[1];
+				}
+				else
+				{
+					this->p_cur_position_->x = this->p_symbol_map_->operator[](this->p_cur_position_->y)[1] - 1;
+				}
+			}
+			else
+			{
+				this->p_cur_position_->x = 0;
+			}
+		}
 	}
 	tui_object->WMove(this->p_cur_position_->y, this->p_cur_position_->x);
 }
@@ -189,9 +202,17 @@ void ConsoleView::KeyDown()
 void ConsoleView::KeyLeft()
 {
 	this->tui_object->GetYX(this->p_cur_position_->y, this->p_cur_position_->x);
+	this->PrevCursorPos(this->p_cur_position_->y, this->p_cur_position_->x);
 	if (this->p_cur_position_->x > this->p_symbol_map_->operator[](this->p_cur_position_->y)[1])
 	{
-		this->p_cur_position_->x = this->p_symbol_map_->operator[](this->p_cur_position_->y)[1] + 1;
+		if (this->p_symbol_map_->operator[](this->p_cur_position_->y)[1] != 1)
+		{
+			this->p_cur_position_->x = this->p_symbol_map_->operator[](this->p_cur_position_->y)[1] - 1;
+		}
+		else
+		{
+			this->p_cur_position_->x = 0;
+		}
 	}
 	tui_object->WMove(this->p_cur_position_->y, this->p_cur_position_->x);
 }
@@ -199,11 +220,32 @@ void ConsoleView::KeyLeft()
 
 void ConsoleView::KeyRight()
 {
-	tui_object->GetYX(this->p_cur_position_->y, this->p_cur_position_->x);
-	if (this->p_cur_position_->x > this->p_symbol_map_->operator[](this->p_cur_position_->y)[1])
+	this->tui_object->GetYX(this->p_cur_position_->y, this->p_cur_position_->x);
+
+	if (this->p_cur_position_->y != this->p_last_position_->y || this->p_cur_position_->x != this->p_last_position_->x)
 	{
-		this->p_cur_position_->x = this->p_symbol_map_->operator[](this->p_cur_position_->y)[1] + 1;
+
+		this->NextCursorPos(this->p_cur_position_->y, this->p_cur_position_->x);
+		if (this->p_cur_position_->x > this->p_symbol_map_->operator[](this->p_cur_position_->y)[1] - 1)
+		{
+			if (this->p_symbol_map_->operator[](this->p_cur_position_->y)[1] != 1)
+			{
+				if (this->p_cur_position_->y == this->p_last_position_->y)
+				{
+					this->p_cur_position_->x = this->p_symbol_map_->operator[](this->p_cur_position_->y)[1];
+				}
+				else
+				{
+					this->p_cur_position_->x = this->p_symbol_map_->operator[](this->p_cur_position_->y)[1] - 1;
+				}
+			}
+			else
+			{
+				this->p_cur_position_->x = 0;
+			}
+		}
 	}
+
 	tui_object->WMove(this->p_cur_position_->y, this->p_cur_position_->x);
 }
 
@@ -360,6 +402,7 @@ void ConsoleView::PrintScreen(MyString& text, const bool new_string, int index)
 		this->p_symbol_map_->operator[](y)[1] = 0;
 	}
 	this->p_last_position_->y = y;
+	this->p_last_position_->x = x;
 }
 
 void ConsoleView::ClearScreen()
