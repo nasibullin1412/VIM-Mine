@@ -5,6 +5,21 @@
 #include "postion.h"
 #include "controller.h"
 
+namespace pan
+{
+    const MyString  edit_mode = "--EDIT AND NAVIGATE--";
+    const MyString  insert_mode = "--INSERT--";
+    const MyString  search_mode = "\\";
+    const MyString  command_mode = ":";
+    const MyString  default_file_name = "NONE";
+    constexpr int   panel_position = 29;
+    constexpr int   statistic_begin = 80;
+    constexpr int   file_name_begin = 100;
+    constexpr int   read_begin = 3;
+}
+
+
+
 class ConsoleView : public Observer
 {
 public:
@@ -33,8 +48,15 @@ private:
     Controller*                     p_controller_;
     Position*                       p_last_position_;
     Position*                       p_cur_position_;
+    MyString                        file_name_;
     int                             index_;
+    int                             old_panel_line;
+    bool                            clear_panel;
 
+    MyString                        UpdatePanel(ModeType& type);
+    MyString                        GetMyString();
+    void                            PrintMyString(const int x, const MyString& string_);
+    void                            PrintStatistic();
     bool                            UpCursor(bool to_begin_string, int& y, int& x);
     bool                            DownCursor(bool to_begin_string, int& y, int& x);
     std::vector<int>                CreateNewLine();
@@ -45,10 +67,17 @@ private:
     void                            KeyDown();
     void                            KeyLeft();
     void                            KeyRight();
+    void                            KeyPgUp();
+    void                            KeyPgDown();
+    void                            KeyEnd();
+    void                            KeyHome();
     char                            ReadSymbol();
     bool                            DirectionKeys(const char symbol);
     int                             SetActualIndex(const char symbol);
     bool	                        CheckNewLine();
+    int                             NumberOfDigits(int value);
+    void                            ClearPanel();
+    
     
 };
 

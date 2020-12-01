@@ -17,7 +17,11 @@ enum class SpecialKeys
 	CURSOR_UP,
 	CURSOR_DOWN,
 	CURSOR_RIGHT,
-	CURSOR_LEFT
+	CURSOR_LEFT, 
+	PG_UP,
+	PG_DOWN,
+	HOME,
+	END
 };
 
 

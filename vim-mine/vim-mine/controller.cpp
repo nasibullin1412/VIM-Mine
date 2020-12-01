@@ -17,15 +17,15 @@ Controller::~Controller()
 {
 }
 
-bool Controller::InfoController(const int index, const char symbol)
+ModeType Controller::InfoController(const int index, MyString& command)
 {
-	this->command_.AppEnd(1, symbol);
+	this->command_.AppEnd(command.CStr());
 	if (this->model_->operator[](static_cast<size_t>(this->mode_type_))->HandleAction(this->command_))
 	{
 		ModeType temp_type = this->model_->operator[](static_cast<size_t>(this->mode_type_))->DoAction(index);
 		this->ChangeType(temp_type);
 	}
-	return false;
+	return this->mode_type_;
 }
 
 

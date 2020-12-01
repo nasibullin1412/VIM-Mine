@@ -136,6 +136,12 @@ bool AdapterPDCur::ChangeOffsetY(int change_)
 	return false;
 }
 
+int AdapterPDCur::MvwPtintInt(int y, int x, int value)
+{
+	mvwprintw(this->pad_, y, x, "%d", value);
+	return 0;
+}
+
 /*bool AdapterPDCur::DownCursor(bool to_begin_string, int& y, int& x)
 {
 	if (y - this->offset_y_ == winparam::height - 1)
@@ -204,4 +210,10 @@ WINDOW* AdapterPDCur::GetWindow()
 WINDOW* AdapterPDCur::GetPod()
 {
 	return this->pad_;
+}
+
+
+void AdapterPDCur::Mvwscanf(int y, int x, MyString& string_)
+{
+	mvwscanw(this->pad_, y, x, "%s", string_.CStr());
 }

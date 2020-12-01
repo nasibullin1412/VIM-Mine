@@ -9,7 +9,10 @@ ConsoleView::ConsoleView()
 	this->p_last_position_ = nullptr;
 	this->p_cur_position_ = nullptr;
 	this->p_controller_ = nullptr;
+	this->file_name_;
 	this->index_ = 0;
+	this->old_panel_line = pan::panel_position;
+	this->clear_panel = false;
 }
 
 ConsoleView::~ConsoleView()
@@ -37,15 +40,25 @@ void ConsoleView::BeginExecute()
 	this->tui_object->NewPad(winparam::real_size, winparam::weight);
 	this->tui_object->PRefresh();
 	this->tui_object->Keypad(true);
+	ModeType type = ModeType::EDIT_MODE;
+	MyString command;
+	char symbol = 0;
 	while (true)
 	{
-		char symbol = this->ReadSymbol();
-
+		command = this->UpdatePanel(type);
+		this->tui_object->PRefresh();
+		if (command.Empty())
+		{
+			symbol = this->ReadSymbol();
+			command.AppEnd(1, symbol);
+		}
 		if (!this->DirectionKeys(symbol))
 		{
 			this->SetActualIndex(symbol);
-			this->p_controller_->InfoController(this->index_, symbol);
+			type =  this->p_controller_->InfoController(this->index_, command);
 		}
+		command.Clear();
+		command.ShrinkToFit();
 	}
 	return;
 
@@ -83,6 +96,26 @@ bool ConsoleView::DirectionKeys(const char symbol)
 	case keys::key_right:
 	{
 		this->UpdateKeys(SpecialKeys::CURSOR_RIGHT);
+		break;
+	}
+	case keys::key_pg_up:
+	{
+		this->UpdateKeys(SpecialKeys::PG_UP);
+		break;
+	}
+	case keys::key_pg_down:
+	{
+		this->UpdateKeys(SpecialKeys::PG_DOWN);
+		break;
+	}
+	case keys::key_home:
+	{
+		this->UpdateKeys(SpecialKeys::HOME);
+		break;
+	}
+	case keys::key_end:
+	{
+		this->UpdateKeys(SpecialKeys::CURSOR_DOWN);
 		break;
 	}
 	default:
@@ -138,6 +171,26 @@ void ConsoleView::UpdateKeys(const SpecialKeys type)
 	case SpecialKeys::CURSOR_LEFT:
 	{
 		this->KeyLeft();
+		break;
+	}
+	case SpecialKeys::PG_UP:
+	{
+		this->KeyPgUp();
+		break;
+	}
+	case SpecialKeys::PG_DOWN:
+	{
+		this->KeyPgDown();
+		break;
+	}
+	case SpecialKeys::HOME:
+	{
+		this->KeyHome();
+		break;
+	}
+	case SpecialKeys::END:
+	{
+		this->KeyEnd();
 		break;
 	}
 	default:
@@ -249,6 +302,46 @@ void ConsoleView::KeyRight()
 	tui_object->WMove(this->p_cur_position_->y, this->p_cur_position_->x);
 }
 
+void ConsoleView::KeyPgUp()
+{
+	int offset_y = this->tui_object->GetOffsetY();
+	if (offset_y < winparam::height)
+	{
+		offset_y = -offset_y;
+	}
+	else
+	{
+		offset_y = -winparam::height;
+	}
+	if (this->p_cur_position_->y > winparam::height)
+	{
+		this->p_cur_position_->y -= winparam::height;
+	}
+	this->p_cur_position_->y -= winparam::height;
+	this->p_cur_position_->x = 0;
+	this->tui_object->WMove(this->p_cur_position_->y, this->p_cur_position_->x);
+	this->ClearPanel();
+	this->tui_object->ChangeOffsetY(offset_y);
+
+}
+
+void ConsoleView::KeyPgDown()
+{
+	int offset_y = this->tui_object->GetOffsetY();
+	if (this->p_cur_position_->y - this->p_last_position_->y > winparam::height)
+	{
+		offset_y = this->p_last_position_->y;
+	}
+}
+
+void ConsoleView::KeyEnd()
+{
+}
+
+void ConsoleView::KeyHome()
+{
+}
+
 
 
 
@@ -258,6 +351,7 @@ bool ConsoleView::UpCursor(bool to_begin_string, int& y, int& x)
 	{
 		if (y - tui_object->GetOffsetY() == 0)
 		{
+			this->ClearPanel();
 			tui_object->ChangeOffsetY(-1);
 		}
 		--y;
@@ -273,6 +367,7 @@ bool ConsoleView::DownCursor(bool to_begin_string, int& y, int& x)
 {
 	if (y - tui_object->GetOffsetY() == winparam::height - 1)
 	{
+		this->ClearPanel();
 		tui_object->ChangeOffsetY(1);
 	}
 	++y;
@@ -419,6 +514,107 @@ bool ConsoleView::CheckNewLine()
 		return true;
 	}
 	return false;
+}
+
+int ConsoleView::NumberOfDigits(int value)
+{
+	int count = 0;
+	while (value != 0)
+	{
+		value /= 10;
+		count++;
+	}
+	return count + 1;
+}
+
+void ConsoleView::ClearPanel()
+{
+	int y, x = 0;
+	this->tui_object->GetYX(y, x);
+	this->tui_object->WMove(this->old_panel_line, 0);
+	this->tui_object->ClrToBot();
+	this->clear_panel = true;
+	this->tui_object->WMove(y, x);
+}
+
+MyString ConsoleView::UpdatePanel(ModeType& type)
+{
+	MyString command;
+	if (!this->clear_panel)
+	{
+		this->tui_object->WMove(this->old_panel_line, 0);
+		this->tui_object->ClrToBot();
+		this->clear_panel = false;
+	}
+	this->old_panel_line = pan::panel_position + this->tui_object->GetOffsetY();
+	switch (type)
+	{
+	case ModeType::EDIT_MODE:
+	{
+		this->PrintMyString(0, pan::edit_mode);
+		this->PrintStatistic();
+		break;
+	}
+	case ModeType::ENTER_SYM_MODE:
+	{
+		this->PrintMyString(0, pan::insert_mode);
+		this->PrintStatistic();
+		break;
+	}
+	case ModeType::ENTER_COM_MODE:
+	{
+		this->PrintMyString(0, pan::command_mode);
+
+		break;
+	}
+	case ModeType::SEARCH_MODE:
+	{
+		this->PrintMyString(0, pan::search_mode);
+		break;
+	}
+	default:
+		break;
+	}
+	this->tui_object->WMove(this->p_cur_position_->y, this->p_cur_position_->x);
+	return command;
+}
+
+MyString ConsoleView::GetMyString()
+{
+	MyString string_;
+	this->tui_object->Mvwscanf(pan::panel_position + this->tui_object->GetOffsetY(), pan::read_begin, string_);
+	return string_;
+}
+
+void ConsoleView::PrintMyString(int x, const MyString& string_)
+{
+	size_t length = string_.Length();
+	int y = pan::panel_position + this->tui_object->GetOffsetY();
+	for (size_t i = 0; i < length; i++)
+	{
+		this->tui_object->MvwPrintw(y, x+i, string_.CStr()[i]);
+		this->tui_object->PRefresh();
+	}
+}
+
+void ConsoleView::PrintStatistic()
+{
+	int y = pan::panel_position + this->tui_object->GetOffsetY();
+	int x = pan::statistic_begin;
+	this->tui_object->WMove(y, x);
+	this->tui_object->MvwPtintInt(y, x, this->p_cur_position_->y);
+	x += this->NumberOfDigits(this->p_cur_position_->y);
+	this->tui_object->MvwPrintw(y, x, '/');
+	x++;
+	this->tui_object->MvwPtintInt(y, x, this->p_last_position_->y);
+	if (this->file_name_.Empty())
+	{
+		this->PrintMyString(pan::file_name_begin ,pan::default_file_name);
+	}
+	else
+	{
+		this->PrintMyString(pan::file_name_begin, this->file_name_);
+	}
 }
 
 void ConsoleView::DoRefreash()
