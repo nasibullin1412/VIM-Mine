@@ -120,12 +120,7 @@ ModeType EnterSymbolMode::DoAction(int index)
 void EnterSymbolMode::EnterSymbol()
 {
     this->text_->Insert(this->index, 1, this->new_symbol_);
-    this->NotifyClearScreen();
-    this->NotifyCheckNewLine();
-    this->NotifyPrintScreen(*this->text_, false, this->index);
-    this->NotifyNextCurs();
-    this->NotifyDoRefreash();
-
+    this->NotifyEnterSymbol(*this->text_);
     return;
 }
 
@@ -133,7 +128,7 @@ void EnterSymbolMode::EnterSymbol()
 
 void EnterSymbolMode::NewString()
 {
-    this->text_->Insert(this->index, "\r\n");
+    this->text_->Insert(this->index, "\n");
     this->NotifyNewString(*this->text_);
     this->NotifyDoRefreash();
 }

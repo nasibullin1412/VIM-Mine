@@ -43,7 +43,7 @@ void ConsoleView::BeginExecute()
 
 		if (!this->DirectionKeys(symbol))
 		{
-			this->SetActualIndex();
+			this->SetActualIndex(symbol);
 			this->p_controller_->InfoController(this->index_, symbol);
 		}
 	}
@@ -91,29 +91,34 @@ bool ConsoleView::DirectionKeys(const char symbol)
 	return true;
 }
 
-int ConsoleView::SetActualIndex()
+int ConsoleView::SetActualIndex(const char symbol)
 {
 	int x, y = 0;
 	this->tui_object->GetYX(y, x);
-	this->index_ = this->p_symbol_map_->operator[](y)[x];
-	if (this->index_ == -1)
+	if (x != 0 || y == 0 || this->p_symbol_map_->operator[](y - 1)[1] != winparam::weight + 1 || symbol == '\n')
 	{
-		if (y != 0 && x == 0)
+		/*if (y != 0)
 		{
-			this->index_ = this->p_symbol_map_->operator[](y - 1)[winparam::n_postion] + 1;
+			if (this->p_symbol_map_->operator[](y - 1)[1] == winparam::weight + 1)
+			{
+				
+			}
+		}*/
+		this->index_ = this->p_symbol_map_->operator[](y)[0] + x;
+	}
+	else
+	{
+		if (this->p_symbol_map_->operator[](y)[1] == 1 && this->p_cur_position_->y != this->p_last_position_->y)
+		{
+			this->index_ = this->p_symbol_map_->operator[](y)[0] + x; //когда строка выше переполнена и на текущей строке только \n
 		}
 		else
 		{
-			if (x != 0)
-			{
-				this->index_ = this->p_symbol_map_->operator[](y)[x - 1] + 1;
-			}
+			this->index_ = this->p_symbol_map_->operator[](y - 1)[0] + this->p_symbol_map_->operator[](y - 1)[1] - 1;//когда происходит переполнение строки с \n на конце
 		}
+			
 	}
-	if (this->index_ == -1)
-	{
-		exit(-1);
-	}
+	return 0;
 }
 
 
@@ -152,22 +157,19 @@ void ConsoleView::KeyUp()
 {
 	this->tui_object->GetYX(this->p_cur_position_->y, this->p_cur_position_->x);
 	this->UpCursor(false, this->p_cur_position_->y, this->p_cur_position_->x);
-	while (this->p_cur_position_->x > 0 && this->p_symbol_map_->operator[](this->p_cur_position_->y)[this->p_cur_position_->x-1] == -1)
+
+	if (this->p_symbol_map_->operator[](this->p_cur_position_->y)[1] == 1)
 	{
-		--this->p_cur_position_->x;
+		this->p_cur_position_->x = 0;
 	}
-	
-	int index = this->p_symbol_map_->operator[](this->p_cur_position_->y)[this->p_cur_position_->x];
-	if (index == -1)
+	else
 	{
-		if (this->p_cur_position_->x == 0)
+		if (this->p_symbol_map_->operator[](this->p_cur_position_->y)[1] < this->p_cur_position_->x)
 		{
-			if (this->p_cur_position_->y != 0)
-			{
-				index = this->p_symbol_map_->operator[](this->p_cur_position_->y - 1)[winparam::n_postion];
-			}
+			this->p_cur_position_->x = this->p_symbol_map_->operator[](this->p_cur_position_->y)[1] - 1;
 		}
 	}
+	
 	tui_object->WMove(this->p_cur_position_->y, this->p_cur_position_->x);
 
 }
@@ -177,20 +179,9 @@ void ConsoleView::KeyDown()
 {
 	this->tui_object->GetYX(this->p_cur_position_->y, this->p_cur_position_->x);
 	this->DownCursor(false, this->p_cur_position_->y, this->p_cur_position_->x);
-	while (this->p_cur_position_->x > 0 && this->p_symbol_map_->operator[](this->p_cur_position_->y)[this->p_cur_position_->x-1] == -1)
+	if (this->p_cur_position_->x > this->p_symbol_map_->operator[](this->p_cur_position_->y)[1])
 	{
-		--this->p_cur_position_->x;
-	}
-	int index = this->p_symbol_map_->operator[](this->p_cur_position_->y)[this->p_cur_position_->x];
-	if (index == -1)
-	{
-		if (this->p_cur_position_->x == 0)
-		{
-			if (this->p_cur_position_->y != 0)
-			{
-				index = this->p_symbol_map_->operator[](this->p_cur_position_->y - 1)[winparam::n_postion];
-			}
-		}
+		this->p_cur_position_->x = this->p_symbol_map_->operator[](this->p_cur_position_->y)[1] + 1;
 	}
 	tui_object->WMove(this->p_cur_position_->y, this->p_cur_position_->x);
 }
@@ -198,10 +189,10 @@ void ConsoleView::KeyDown()
 void ConsoleView::KeyLeft()
 {
 	this->tui_object->GetYX(this->p_cur_position_->y, this->p_cur_position_->x);
-	do
+	if (this->p_cur_position_->x > this->p_symbol_map_->operator[](this->p_cur_position_->y)[1])
 	{
-		this->PrevCursorPos(this->p_cur_position_->y, this->p_cur_position_->x);
-	} while (this->p_cur_position_->x > 0 && this->p_symbol_map_->operator[](this->p_cur_position_->y)[this->p_cur_position_->x-1] == -1);
+		this->p_cur_position_->x = this->p_symbol_map_->operator[](this->p_cur_position_->y)[1] + 1;
+	}
 	tui_object->WMove(this->p_cur_position_->y, this->p_cur_position_->x);
 }
 
@@ -209,10 +200,10 @@ void ConsoleView::KeyLeft()
 void ConsoleView::KeyRight()
 {
 	tui_object->GetYX(this->p_cur_position_->y, this->p_cur_position_->x);
-	do
+	if (this->p_cur_position_->x > this->p_symbol_map_->operator[](this->p_cur_position_->y)[1])
 	{
-		this->NextCursorPos(this->p_cur_position_->y, this->p_cur_position_->x);
-	} while (this->p_cur_position_->x > 0 && this->p_symbol_map_->operator[](this->p_cur_position_->y)[this->p_cur_position_->x - 1] == -1);
+		this->p_cur_position_->x = this->p_symbol_map_->operator[](this->p_cur_position_->y)[1] + 1;
+	}
 	tui_object->WMove(this->p_cur_position_->y, this->p_cur_position_->x);
 }
 
@@ -253,7 +244,7 @@ bool ConsoleView::DownCursor(bool to_begin_string, int& y, int& x)
 std::vector<int> ConsoleView::CreateNewLine()
 {
 
-	std::vector<int>new_line(winparam::weight + 2, -1);
+	std::vector<int>new_line(2, 0);
 	//new_line[0] = static_cast<int>(*this->p_index_);
 	return new_line;
 
@@ -289,45 +280,86 @@ void ConsoleView::PrevCursorPos(int& y, int& x)
 
 void ConsoleView::PrintScreen(MyString& text, const bool new_string, int index)
 {
-	size_t size = text.Length();
-	int x = this->p_cur_position_->x;
+	size_t length = text.Length();
+	int x = 0;
 	int y = this->p_cur_position_->y;
-	for (size_t i = index; i < size; i++)
+
+	int idx = 0;
+	if (y != 0)
 	{
-		char sym = text[i];
-		if (sym == '\r')
+		idx = this->p_symbol_map_->operator[](y - 1)[0] + this->p_symbol_map_->operator[](y - 1)[1];
+		if (!new_string && this->p_cur_position_->x == 0 && this->p_symbol_map_->operator[](y -1)[1] == winparam::weight + 1)
+		{
+			if (text[idx + 1] != '\n')
+			{
+				--idx;
+				--this->p_symbol_map_->operator[](y - 1)[1];
+			}
+		}
+	}
+	else
+	{
+		idx = 0;
+	}
+	this->tui_object->PRefresh();
+	for (size_t i = static_cast<size_t>(idx); i < length; i++)
+	{
+
+		if (text[i] != '\n')
+		{
+			this->tui_object->MvwPrintw(y, x, text[i]);
+			if (x == 0)
+			{
+				this->p_symbol_map_->operator[](y)[0] = i;
+				this->p_symbol_map_->operator[](y)[1] = 1;
+			}
+			else
+			{
+				this->p_symbol_map_->operator[](y)[1] +=1;
+			}
+			this->NextCursorPos(y, x);
+		}
+		else
 		{
 			if (x != 0 || new_string)
 			{
-				this->p_symbol_map_->operator[](y)[winparam::r_postion] = i;
-				this->p_symbol_map_->operator[](y)[winparam::n_postion] = i + 1;
+				if (x == 0)
+				{
+					if (i != 0)
+					{
+						this->p_symbol_map_->operator[](y)[0] = this->p_symbol_map_->operator[](y-1)[1] + this->p_symbol_map_->operator[](y-1)[0];
+					}
+					this->p_symbol_map_->operator[](y)[1] = 1;
+				}
+				else
+				{
+					this->p_symbol_map_->operator[](y)[1] += 1;
+				}
 				this->DownCursor(true, y, x);
 			}
 			else
 			{
-				this->p_symbol_map_->operator[](y)[winparam::r_postion] = this->p_symbol_map_->operator[](y-1)[winparam::r_postion];
-				this->p_symbol_map_->operator[](y)[winparam::n_postion] = this->p_symbol_map_->operator[](y-1)[winparam::n_postion];
-				this->p_symbol_map_->operator[](y-1)[winparam::r_postion] = -1;
-				this->p_symbol_map_->operator[](y-1)[winparam::n_postion] = -1;
+				if (this->p_symbol_map_->operator[](this->p_cur_position_->y)[1] == winparam::weight && text[i-1] != '\n')
+				{
+					this->p_symbol_map_->operator[](y - 1)[1] += 1;
+				}
+				else
+				{
+					this->p_symbol_map_->operator[](y)[1] = 1;
+					this->p_symbol_map_->operator[](y)[0] = i;
+					this->DownCursor(true, y, x);
+				}
+				this->tui_object->PRefresh();
+				
 			}
-			i++;
-		}
-		else
-		{
-			if (x == winparam::weight)
-			{
-				this->DownCursor(true, y, x);
-			}
-			this->tui_object->MvwPrintw(y, x, sym);
-			this->p_symbol_map_->operator[](y)[x] = i;
-			this->NextCursorPos(y, x);
 		}
 	}
-	if (y < this->p_symbol_map_->size())
+	if (x == 0 && this->p_symbol_map_->size() != y)
 	{
-		this->p_symbol_map_->operator[](y)[x] = static_cast<int>(size);
+		this->p_symbol_map_->operator[](y)[0] = length;
+		this->p_symbol_map_->operator[](y)[1] = 0;
 	}
-	
+	this->p_last_position_->y = y;
 }
 
 void ConsoleView::ClearScreen()
@@ -335,13 +367,15 @@ void ConsoleView::ClearScreen()
 	this->tui_object->ClrToBot();
 }
 
-void ConsoleView::CheckNewLine()
+bool ConsoleView::CheckNewLine()
 {
-	if (this->p_cur_position_->x == winparam::weight - 1)
+	if (this->p_cur_position_->x == winparam::weight - 1 || this->p_symbol_map_->operator[](this->p_cur_position_->y)[1] == winparam::weight+1)
 	{
 		std::vector<int> new_line = this->CreateNewLine();
 		this->p_symbol_map_->emplace_back(new_line);
+		return true;
 	}
+	return false;
 }
 
 void ConsoleView::DoRefreash()
@@ -352,28 +386,27 @@ void ConsoleView::DoRefreash()
 void ConsoleView::NextCur()
 {
 	this->NextCursorPos(this->p_cur_position_->y, this->p_cur_position_->x);
-	this->index_ = this->p_symbol_map_->operator[](this->p_cur_position_->y)[this->p_cur_position_->x];
 }
 
 void ConsoleView::PrevCur()
 {
 	this->PrevCursorPos(this->p_cur_position_->y, this->p_cur_position_->x);
-	this->index_ = this->p_symbol_map_->operator[](this->p_cur_position_->y)[this->p_cur_position_->x];
 }
 
-void ConsoleView::NewString(MyString &text)
+void ConsoleView::NewString(MyString& text)
 {
-	int y = 0;
-	int x = 0;
-	this->tui_object->GetYX(y, x);
+	int x = this->p_cur_position_->x;
+	int y = this->p_cur_position_->y;
+	this->tui_object->WMove(y, 0);
+	this->tui_object->ClrToBot();
 	bool shit = false;
 	if (y != 0) //условие того что не первая линия
 	{
 		if (x == 0)// гарантирует то что в начале линнии
 		{
-			if (this->p_symbol_map_->operator[](y - 1)[winparam::n_postion] == -1) //гарантирует то что прошлая строка не закончилась
+			if (this->p_symbol_map_->operator[](y - 1)[1] == winparam::weight) //гарантирует то что прошлая строка не закончилась
 			{
-				if (this->index_ == text.Length()-2)//гарантирует то что крайняя позиция консоли
+				if (this->index_ == text.Length()-1)//гарантирует то что крайняя позиция консоли
 				{
 					shit = true;
 				}
@@ -382,49 +415,37 @@ void ConsoleView::NewString(MyString &text)
 
 		}
 	}
-	if (this->index_ == -1)
+	if (!shit)
 	{
-		if (y != 0)
-		{
-			this->index_ = this->p_symbol_map_->operator[](y - 1)[winparam::n_postion] + 1;
-		}
-	}
-	this->tui_object->ClrToBot();
-	if (shit)//если тот самый ужасный случай
-	{
-		this->p_symbol_map_->operator[](y)[0] = -1;
-		this->p_symbol_map_->operator[](y - 1)[winparam::r_postion] = this->index_;
-		this->p_symbol_map_->operator[](y - 1)[winparam::n_postion] = this->index_ + 1;
+		std::vector<std::vector<int>>::iterator it;
+		it = this->p_symbol_map_->begin();
+		it += this->p_cur_position_->y+1;
+		std::vector<int> new_line = this->CreateNewLine();
+		this->p_symbol_map_->insert(it, new_line);
+		this->PrintScreen(text, true, 0);
+		this->DownCursor(true, this->p_cur_position_->y, this->p_cur_position_->x);
+		
+		
 	}
 	else
 	{
-		int temp = x;
-		if (x != 0 || y != 0)
-		{
-			while (this->p_symbol_map_->operator[](y)[temp] != -1)
-			{
-				this->p_symbol_map_->operator[](y)[temp] = -1;
-				temp++;
-			}
-		}
-		if (this->index_ == text.Length() - 2)
-		{
-			this->p_symbol_map_->operator[](y)[winparam::r_postion] = this->index_;
-			this->p_symbol_map_->operator[](y)[winparam::n_postion] = this->index_ + 1;
-		}
-		else
-		{
-			this->p_symbol_map_->operator[](y)[winparam::r_postion] = this->index_ + 1;
-			this->p_symbol_map_->operator[](y)[winparam::n_postion] = this->index_ + 2;
-		}
-		std::vector<std::vector<int>>::iterator it;
-		it = this->p_symbol_map_->begin();
-		it += this->p_cur_position_->y + 1;
-		std::vector<int> new_line = this->CreateNewLine();
-		this->p_symbol_map_->insert(it, new_line);
-		this->PrintScreen(text, true, this->index_);
-		this->DownCursor(true, this->p_cur_position_->y, this->p_cur_position_->x);
+		this->p_symbol_map_->operator[](y - 1)[1] += 1;
+		this->p_symbol_map_->operator[](y)[0] = text.Length();
+		this->p_symbol_map_->operator[](y)[1] += 0;
+
 	}
 	this->tui_object->WMove(this->p_cur_position_->y, this->p_cur_position_->x);
+	
+}
+
+void ConsoleView::EnterSymbol(MyString& text)
+{
+	
+	this->ClearScreen();
+	this->DoRefreash();
+	this->CheckNewLine();
+	this->PrintScreen(text, false, this->index_);
+	this->NextCur();
+	this->DoRefreash();
 }
 

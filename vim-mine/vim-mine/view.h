@@ -21,11 +21,11 @@ public:
 
     virtual void    PrintScreen(MyString& text, const bool new_string, int index);
     virtual void	ClearScreen();
-    virtual void	CheckNewLine();
     virtual void	DoRefreash();
     virtual void    NextCur();
     virtual void    PrevCur();
-    virtual void	NewString(MyString &length);
+    virtual void	NewString(MyString& text);
+    virtual void    EnterSymbol(MyString& text);
 
 private:
     AdapterPDCur*                   tui_object;
@@ -47,7 +47,8 @@ private:
     void                            KeyRight();
     char                            ReadSymbol();
     bool                            DirectionKeys(const char symbol);
-    int                             SetActualIndex();
+    int                             SetActualIndex(const char symbol);
+    bool	                        CheckNewLine();
     
 };
 

@@ -22,10 +22,6 @@ void Observable::NotifyClearScreen()
     observers_[0]->ClearScreen();
 }
 
-void Observable::NotifyCheckNewLine()
-{
-    observers_[0]->CheckNewLine();
-}
 
 void Observable::NotifyDoRefreash()
 {
@@ -45,5 +41,10 @@ void Observable::NotifyPrevCurs()
 void Observable::NotifyNewString(MyString& text)
 {
     this->observers_[0]->NewString(text);
+}
+
+void Observable::NotifyEnterSymbol(MyString& text)
+{
+    this->observers_[0]->EnterSymbol(text);
 }
 

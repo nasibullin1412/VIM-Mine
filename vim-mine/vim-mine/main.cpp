@@ -12,7 +12,7 @@ int main()
 	Position cur_position;
 	int index = 0;
 	std::vector<std::vector<int>> map;
-	std::vector<int> first_string(winparam::weight + 2, -1);
+	std::vector<int> first_string(2, 0);
 	first_string[0] = 0;
 	map.emplace_back(first_string);
 	ConsoleView view_;

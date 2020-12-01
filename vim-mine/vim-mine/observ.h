@@ -26,12 +26,11 @@ class Observer
 public:
 	virtual void	PrintScreen(MyString &text, const bool new_string, int index) = 0;
 	virtual void	ClearScreen() = 0;
-	virtual void	CheckNewLine() = 0;
 	virtual void	DoRefreash() = 0;
 	virtual void	NextCur() = 0;
 	virtual void	PrevCur() = 0;
 	virtual void	NewString(MyString& text) = 0;
-
+	virtual void    EnterSymbol(MyString& text) = 0;
 
 };
 
@@ -42,11 +41,11 @@ public:
 	void	AddObserver(Observer* observer);
 	void	NotifyPrintScreen(MyString& text, const bool new_string, int index);
 	void	NotifyClearScreen();
-	void	NotifyCheckNewLine();
 	void	NotifyDoRefreash();
 	void	NotifyNextCurs();
 	void	NotifyPrevCurs();
 	void	NotifyNewString(MyString& text);
+	void	NotifyEnterSymbol(MyString& text);
 
 
 private:
