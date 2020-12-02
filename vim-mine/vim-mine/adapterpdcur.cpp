@@ -4,6 +4,7 @@ AdapterPDCur::AdapterPDCur()
 {
 	this->screen_ = nullptr;
 	this->pad_ = nullptr;
+	this->pannel_ = nullptr;
 	this->offset_x_ = 0;
 	this->offset_y_ = 0;
 }
@@ -16,6 +17,11 @@ AdapterPDCur::~AdapterPDCur()
 int AdapterPDCur::WMove(const int y, const int x)
 {
 	return wmove(this->pad_, y, x);
+}
+
+int AdapterPDCur::WPanMove(const int y, const int x)
+{
+	return wmove(this->pannel_, y, x);
 }
 
 
@@ -95,11 +101,7 @@ int AdapterPDCur::DeleteWin()
 
 
 
-void AdapterPDCur::HidePanelPosition()
-{
-	this->WMove(winparam::height, 0);
-	this->ClrToBot();
-}
+
 
 int AdapterPDCur::ClrToBot()
 {
@@ -138,42 +140,29 @@ bool AdapterPDCur::ChangeOffsetY(int change_)
 
 int AdapterPDCur::MvwPtintInt(int y, int x, int value)
 {
-	mvwprintw(this->pad_, y, x, "%d", value);
+	mvwprintw(this->pannel_, y, x, "%d", value);
 	return 0;
 }
 
-/*bool AdapterPDCur::DownCursor(bool to_begin_string, int& y, int& x)
+bool AdapterPDCur::NewWin(int height, int width, int start_y, int start_x)
 {
-	if (y - this->offset_y_ == winparam::height - 1)
+	this->pannel_ = newwin(height, width, start_y, start_x);
+	if (this->pannel_ == nullptr)
 	{
-		this->ChangeOffsetY(1);
+		return false;
 	}
-	++y;
-	if (to_begin_string)
-	{
-		x = 0;
-	}
-	return false;
+	return true;
 }
 
-bool AdapterPDCur::UpCursor(bool to_begin_string, int& y, int& x)
+void AdapterPDCur::WRefresh()
 {
-	if (y != 0)
-	{
-		if (y - this->offset_y_ == 0)
-		{
-			ChangeOffsetY(-1);
-		}
-		--y;
-		if (to_begin_string)
-		{
-			x = winparam::weight-1;
-		}
-	}
-	return false;
-}*/
+	wrefresh(this->pannel_);
+}
 
-
+void AdapterPDCur::ClearPannel()
+{
+	wclear(this->pannel_);
+}
 
 
 
@@ -207,7 +196,7 @@ WINDOW* AdapterPDCur::GetWindow()
 	return this->pad_;
 }
 
-WINDOW* AdapterPDCur::GetPod()
+WINDOW* AdapterPDCur::GetPad()
 {
 	return this->pad_;
 }
@@ -215,5 +204,10 @@ WINDOW* AdapterPDCur::GetPod()
 
 void AdapterPDCur::Mvwscanf(int y, int x, MyString& string_)
 {
-	mvwscanw(this->pad_, y, x, "%s", string_.CStr());
+	mvwscanw(this->pannel_, y, x, "%s", string_.CStr());
+}
+
+void AdapterPDCur::MvwprintPannel(int y, int x, char sym)
+{
+	mvwprintw(this->pannel_, y, x, "%c", sym);
 }

@@ -40,8 +40,7 @@ private:
 	int						index;
 	void					EnterSymbol();
 	void					NewString();
-	//void DeleteSymbol(AdapterPDCur& tui_object);
-	//void PrintScreen(AdapterPDCur& tui_object, const bool new_string);
+	void					DeleteSymbol();
 };
 
 

@@ -9,6 +9,7 @@ EnterSymbolMode::EnterSymbolMode()
     this->type_ = SymbolModeActions::INIT_VALUE;
     this->is_first = true;
     this->new_symbol_ = 0;
+    this->index = 0;
 }
 
 EnterSymbolMode::~EnterSymbolMode()
@@ -95,7 +96,7 @@ ModeType EnterSymbolMode::DoAction(int index)
     }
     case SymbolModeActions::DELETE_SYMBOL:
     {
-        //this->DeleteSymbol();
+        this->DeleteSymbol();
         break;
     }
     case SymbolModeActions::NEW_STRING:
@@ -131,4 +132,18 @@ void EnterSymbolMode::NewString()
     this->text_->Insert(this->index, "\n");
     this->NotifyNewString(*this->text_);
     this->NotifyDoRefreash();
+}
+
+void EnterSymbolMode::DeleteSymbol()
+{
+    bool delete_line = false;
+    if (index != 0)
+    {
+        if (this->text_->operator[](this->index - 1) == '\n')
+        {
+            delete_line = true;
+        }
+        this->text_->Erase(this->index-1, 1);
+        this->NotifyDeleteSymbol(*this->text_, delete_line);
+    }
 }

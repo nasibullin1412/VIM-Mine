@@ -35,7 +35,7 @@ public:
 	virtual void	PrevCur() = 0;
 	virtual void	NewString(MyString& text) = 0;
 	virtual void    EnterSymbol(MyString& text) = 0;
-
+	virtual void	DeleteSymbol(MyString& text, bool delete_line) = 0;
 };
 
 class Observable
@@ -50,6 +50,7 @@ public:
 	void	NotifyPrevCurs();
 	void	NotifyNewString(MyString& text);
 	void	NotifyEnterSymbol(MyString& text);
+	void	NotifyDeleteSymbol(MyString& text, bool delete_line);
 
 
 private:

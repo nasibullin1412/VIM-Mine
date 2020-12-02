@@ -11,8 +11,6 @@ ConsoleView::ConsoleView()
 	this->p_controller_ = nullptr;
 	this->file_name_;
 	this->index_ = 0;
-	this->old_panel_line = pan::panel_position;
-	this->clear_panel = false;
 }
 
 ConsoleView::~ConsoleView()
@@ -40,6 +38,7 @@ void ConsoleView::BeginExecute()
 	this->tui_object->NewPad(winparam::real_size, winparam::weight);
 	this->tui_object->PRefresh();
 	this->tui_object->Keypad(true);
+	this->tui_object->NewWin(winparam::pannel_height, winparam::weight, winparam::pan_start_y, 0);
 	ModeType type = ModeType::EDIT_MODE;
 	MyString command;
 	char symbol = 0;
@@ -230,7 +229,7 @@ void ConsoleView::KeyDown()
 		
 		this->DownCursor(false, this->p_cur_position_->y, this->p_cur_position_->x);
 		
-		if (this->p_cur_position_->x > this->p_symbol_map_->operator[](this->p_cur_position_->y)[1])
+		if (this->p_cur_position_->x > this->p_symbol_map_->operator[](this->p_cur_position_->y)[1]-1)
 		{
 			if (this->p_cur_position_->y == this->p_last_position_->y || this->p_symbol_map_->operator[](this->p_cur_position_->y)[1] != 1)
 			{
@@ -320,7 +319,6 @@ void ConsoleView::KeyPgUp()
 	this->p_cur_position_->y -= winparam::height;
 	this->p_cur_position_->x = 0;
 	this->tui_object->WMove(this->p_cur_position_->y, this->p_cur_position_->x);
-	this->ClearPanel();
 	this->tui_object->ChangeOffsetY(offset_y);
 
 }
@@ -351,7 +349,6 @@ bool ConsoleView::UpCursor(bool to_begin_string, int& y, int& x)
 	{
 		if (y - tui_object->GetOffsetY() == 0)
 		{
-			this->ClearPanel();
 			tui_object->ChangeOffsetY(-1);
 		}
 		--y;
@@ -367,7 +364,6 @@ bool ConsoleView::DownCursor(bool to_begin_string, int& y, int& x)
 {
 	if (y - tui_object->GetOffsetY() == winparam::height - 1)
 	{
-		this->ClearPanel();
 		tui_object->ChangeOffsetY(1);
 	}
 	++y;
@@ -527,26 +523,27 @@ int ConsoleView::NumberOfDigits(int value)
 	return count + 1;
 }
 
-void ConsoleView::ClearPanel()
+void ConsoleView::DeleteLine()
 {
-	int y, x = 0;
-	this->tui_object->GetYX(y, x);
-	this->tui_object->WMove(this->old_panel_line, 0);
-	this->tui_object->ClrToBot();
-	this->clear_panel = true;
-	this->tui_object->WMove(y, x);
+	std::vector<std::vector<int>>::iterator it;
+	it = this->p_symbol_map_->begin();
+	it += this->p_cur_position_->y;
+	this->p_symbol_map_->erase(it);
+	this->p_cur_position_->y -= 1;
+	this->p_cur_position_->x = this->p_symbol_map_->operator[](this->p_cur_position_->y)[1] - 1;
+	if (this->p_cur_position_->x < 0)
+	{
+		this->p_cur_position_->x = 0;
+	}
+	this->tui_object->WMove(this->p_cur_position_->y, this->p_cur_position_->x);
+	this->tui_object->PRefresh();
 }
+
 
 MyString ConsoleView::UpdatePanel(ModeType& type)
 {
 	MyString command;
-	if (!this->clear_panel)
-	{
-		this->tui_object->WMove(this->old_panel_line, 0);
-		this->tui_object->ClrToBot();
-		this->clear_panel = false;
-	}
-	this->old_panel_line = pan::panel_position + this->tui_object->GetOffsetY();
+	this->tui_object->ClearPannel();
 	switch (type)
 	{
 	case ModeType::EDIT_MODE:
@@ -575,38 +572,37 @@ MyString ConsoleView::UpdatePanel(ModeType& type)
 	default:
 		break;
 	}
-	this->tui_object->WMove(this->p_cur_position_->y, this->p_cur_position_->x);
+	this->tui_object->WRefresh();
+
 	return command;
 }
 
 MyString ConsoleView::GetMyString()
 {
 	MyString string_;
-	this->tui_object->Mvwscanf(pan::panel_position + this->tui_object->GetOffsetY(), pan::read_begin, string_);
+	this->tui_object->Mvwscanf(0, pan::read_begin, string_);
 	return string_;
 }
 
 void ConsoleView::PrintMyString(int x, const MyString& string_)
 {
 	size_t length = string_.Length();
-	int y = pan::panel_position + this->tui_object->GetOffsetY();
 	for (size_t i = 0; i < length; i++)
 	{
-		this->tui_object->MvwPrintw(y, x+i, string_.CStr()[i]);
+		this->tui_object->MvwprintPannel(0, x+i, string_.CStr()[i]);
 		this->tui_object->PRefresh();
 	}
 }
 
 void ConsoleView::PrintStatistic()
 {
-	int y = pan::panel_position + this->tui_object->GetOffsetY();
 	int x = pan::statistic_begin;
-	this->tui_object->WMove(y, x);
-	this->tui_object->MvwPtintInt(y, x, this->p_cur_position_->y);
+	this->tui_object->WPanMove(0, x);
+	this->tui_object->MvwPtintInt(0, x, this->p_cur_position_->y);
 	x += this->NumberOfDigits(this->p_cur_position_->y);
-	this->tui_object->MvwPrintw(y, x, '/');
+	this->tui_object->MvwprintPannel(0, x, '/');
 	x++;
-	this->tui_object->MvwPtintInt(y, x, this->p_last_position_->y);
+	this->tui_object->MvwPtintInt(0, x, this->p_last_position_->y);
 	if (this->file_name_.Empty())
 	{
 		this->PrintMyString(pan::file_name_begin ,pan::default_file_name);
@@ -638,7 +634,7 @@ void ConsoleView::NewString(MyString& text)
 	int y = this->p_cur_position_->y;
 	this->tui_object->WMove(y, 0);
 	this->tui_object->ClrToBot();
-	bool shit = false;
+	bool special = false;
 	if (y != 0) //условие того что не первая линия
 	{
 		if (x == 0)// гарантирует то что в начале линнии
@@ -647,14 +643,14 @@ void ConsoleView::NewString(MyString& text)
 			{
 				if (this->index_ == text.Length()-1)//гарантирует то что крайняя позиция консоли
 				{
-					shit = true;
+					special = true;
 				}
 
 			}
 
 		}
 	}
-	if (!shit)
+	if (!special)
 	{
 		std::vector<std::vector<int>>::iterator it;
 		it = this->p_symbol_map_->begin();
@@ -686,5 +682,23 @@ void ConsoleView::EnterSymbol(MyString& text)
 	this->PrintScreen(text, false, this->index_);
 	this->NextCur();
 	this->DoRefreash();
+}
+
+
+
+void ConsoleView::DeleteSymbol(MyString& text, bool delete_line)
+{
+	if (delete_line)
+	{
+		this->DeleteLine();
+	}
+	else
+	{
+		this->PrevCursorPos(this->p_cur_position_->y, this->p_cur_position_->x);
+	}
+	this->tui_object->ClrToBot();
+	this->PrintScreen(text, false, 0);
+	this->tui_object->WMove(this->p_cur_position_->y, this->p_cur_position_->x);
+	this->tui_object->PRefresh();
 }
 

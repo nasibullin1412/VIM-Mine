@@ -12,7 +12,6 @@ namespace pan
     const MyString  search_mode = "\\";
     const MyString  command_mode = ":";
     const MyString  default_file_name = "NONE";
-    constexpr int   panel_position = 29;
     constexpr int   statistic_begin = 80;
     constexpr int   file_name_begin = 100;
     constexpr int   read_begin = 3;
@@ -41,6 +40,7 @@ public:
     virtual void    PrevCur();
     virtual void	NewString(MyString& text);
     virtual void    EnterSymbol(MyString& text);
+    virtual void	DeleteSymbol(MyString& text, bool delete_line);
 
 private:
     AdapterPDCur*                   tui_object;
@@ -50,8 +50,6 @@ private:
     Position*                       p_cur_position_;
     MyString                        file_name_;
     int                             index_;
-    int                             old_panel_line;
-    bool                            clear_panel;
 
     MyString                        UpdatePanel(ModeType& type);
     MyString                        GetMyString();
@@ -76,8 +74,7 @@ private:
     int                             SetActualIndex(const char symbol);
     bool	                        CheckNewLine();
     int                             NumberOfDigits(int value);
-    void                            ClearPanel();
-    
+    void                            DeleteLine();
     
 };
 

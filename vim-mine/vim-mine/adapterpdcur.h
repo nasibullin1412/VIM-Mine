@@ -33,11 +33,13 @@ namespace border_
 
 namespace winparam
 {
-	constexpr int height = 29;
+	constexpr int height = 28;
 	constexpr int weight = 119;
 	constexpr int r_postion = 119;
 	constexpr int n_postion = 120;
 	constexpr int real_size = 10000;
+	constexpr int pannel_height = 1;
+	constexpr int pan_start_y = 29;
 }
 
 class AdapterPDCur
@@ -48,9 +50,11 @@ public:
 	bool		InitScr();
 	bool		NewPad(const int height, const int weight);
 	WINDOW*		GetWindow();
-	WINDOW*		GetPod();
+	WINDOW*		GetPad();
 	void		Mvwscanf(int y, int x, MyString &string_);
+	void		MvwprintPannel(int y, int x, char sym);
 	int			WMove(const int y, const int x);
+	int			WPanMove(const int y, const int x);
 	int			EndWin();
 	int			MvwPrintw(int y, int x, char sym);
 	int			Box(const chtype symbol_hieght, const chtype symbol_weight);
@@ -66,18 +70,19 @@ public:
 	int			GetCh();
 	int			PRefresh();
 	int			DeleteWin();
-	void		HidePanelPosition();
 	int			ClrToBot();
 	int			GetOffsetY();
 	int			GetOffsetX();
 	bool		ChangeOffsetX(int cange_);
 	bool		ChangeOffsetY(int change_);
 	int			MvwPtintInt(int y, int x, int value);
-	
-	//int		WPrint(const char* put_string, ...);
+	bool		NewWin(int height, int width, int start_y, int start_x);
+	void		WRefresh();
+	void		ClearPannel();
 private:
 	WINDOW* screen_;
 	WINDOW* pad_;
+	WINDOW* pannel_;
 	int		offset_y_;
 	int		offset_x_;
 

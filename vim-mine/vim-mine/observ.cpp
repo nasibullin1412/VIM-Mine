@@ -48,3 +48,8 @@ void Observable::NotifyEnterSymbol(MyString& text)
     this->observers_[0]->EnterSymbol(text);
 }
 
+void Observable::NotifyDeleteSymbol(MyString& text, bool delete_line)
+{
+    this->observers_[0]->DeleteSymbol(text, delete_line);
+}
+
