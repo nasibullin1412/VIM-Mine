@@ -53,3 +53,8 @@ void Observable::NotifyDeleteSymbol(MyString& text, bool delete_line)
     this->observers_[0]->DeleteSymbol(text, delete_line);
 }
 
+void Observable::NotifyOpenFile(MyString& text, MyString& file_name)
+{
+    this->observers_[0]->OpneFile(text, file_name);
+}
+

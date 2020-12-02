@@ -36,6 +36,7 @@ public:
 	virtual void	NewString(MyString& text) = 0;
 	virtual void    EnterSymbol(MyString& text) = 0;
 	virtual void	DeleteSymbol(MyString& text, bool delete_line) = 0;
+	virtual void	OpneFile(MyString& text, MyString& file_name) = 0;
 };
 
 class Observable
@@ -51,6 +52,7 @@ public:
 	void	NotifyNewString(MyString& text);
 	void	NotifyEnterSymbol(MyString& text);
 	void	NotifyDeleteSymbol(MyString& text, bool delete_line);
+	void	NotifyOpenFile(MyString& text, MyString& file_name);
 
 
 private:

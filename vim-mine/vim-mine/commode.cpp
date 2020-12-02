@@ -4,6 +4,7 @@
 ComMode::ComMode()
 {
 	this->type_ = ComAction::INIT_VALUE;
+	this->open_ = false;
 }
 
 ComMode::~ComMode()
@@ -13,6 +14,11 @@ ComMode::~ComMode()
 bool ComMode::HandleAction(MyString& command)
 {
 	this->command_ = command;
+	if (command[0] == keys::key_escape)
+	{
+		this->type_ = ComAction::EXIT_FROM_THIS_MODE;
+		return true;
+	}
 	size_t i = 0;
 	for (i; i < commode::number_of_check; i++)
 	{
@@ -104,6 +110,10 @@ ModeType ComMode::DoAction(int index)
 	{
 		break;
 	}
+	case ComAction::EXIT_FROM_THIS_MODE:
+	{
+		return ModeType::EDIT_MODE;
+	}
 	default:
 		break;
 	}
@@ -135,7 +145,6 @@ bool ComMode::OPenFile()
 	{
 		return false;
 	}
-
 	std::ifstream fin;
 	fin.open(this->file_.CStr());
 	if (!fin.is_open())
@@ -152,5 +161,6 @@ bool ComMode::OPenFile()
 		this->text_->AppEnd(1, symbol);
 		symbol = fin.get();
 	}
+	this->NotifyOpenFile(*this->text_, this->file_);
 	return true;
 }

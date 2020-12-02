@@ -41,6 +41,7 @@ public:
     virtual void	NewString(MyString& text);
     virtual void    EnterSymbol(MyString& text);
     virtual void	DeleteSymbol(MyString& text, bool delete_line);
+    virtual void	OpneFile(MyString& text, MyString& file_name);
 
 private:
     AdapterPDCur*                   tui_object;
@@ -50,6 +51,7 @@ private:
     Position*                       p_cur_position_;
     MyString                        file_name_;
     int                             index_;
+    bool                            after_key;
 
     MyString                        UpdatePanel(ModeType& type);
     MyString                        GetMyString();
@@ -76,7 +78,7 @@ private:
     int                             NumberOfDigits(int value);
     void                            DeleteLine();
     bool                            IsSpecKeyOnPanel(int& x, int sym, MyString& command_);
-    
+    void                            CountAndCreateLines(MyString& text);
 };
 
 

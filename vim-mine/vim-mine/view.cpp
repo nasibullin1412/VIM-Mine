@@ -11,6 +11,7 @@ ConsoleView::ConsoleView()
 	this->p_controller_ = nullptr;
 	this->file_name_;
 	this->index_ = 0;
+	this->after_key = false;
 }
 
 ConsoleView::~ConsoleView()
@@ -55,6 +56,10 @@ void ConsoleView::BeginExecute()
 		{
 			this->SetActualIndex(symbol);
 			type =  this->p_controller_->InfoController(this->index_, command);
+		}
+		else
+		{
+			this->after_key = true;
 		}
 		command.Clear();
 		command.ShrinkToFit();
@@ -114,7 +119,7 @@ bool ConsoleView::DirectionKeys(const char symbol)
 	}
 	case keys::key_end:
 	{
-		this->UpdateKeys(SpecialKeys::CURSOR_DOWN);
+		this->UpdateKeys(SpecialKeys::END);
 		break;
 	}
 	default:
@@ -134,9 +139,9 @@ int ConsoleView::SetActualIndex(const char symbol)
 	}
 	else
 	{
-		if (this->p_symbol_map_->operator[](y)[1] == 1 && this->p_cur_position_->y != this->p_last_position_->y)
+		if (this->p_symbol_map_->operator[](y)[1] == 1 && this->p_cur_position_->y != this->p_last_position_->y || after_key)
 		{
-			this->index_ = this->p_symbol_map_->operator[](y)[0] + x; //когда строка выше переполнена и на текущей строке только \n
+			this->index_ = this->p_symbol_map_->operator[](y)[0] + x; //когда строка выше переполнена и на текущей строке только \n или пришли на данную позицию с помощью клавы
 		}
 		else
 		{
@@ -303,41 +308,43 @@ void ConsoleView::KeyRight()
 
 void ConsoleView::KeyPgUp()
 {
-	int offset_y = this->tui_object->GetOffsetY();
-	if (offset_y < winparam::height)
-	{
-		offset_y = -offset_y;
-	}
-	else
-	{
-		offset_y = -winparam::height;
-	}
-	if (this->p_cur_position_->y > winparam::height)
-	{
-		this->p_cur_position_->y -= winparam::height;
-	}
-	this->p_cur_position_->y -= winparam::height;
-	this->p_cur_position_->x = 0;
-	this->tui_object->WMove(this->p_cur_position_->y, this->p_cur_position_->x);
-	this->tui_object->ChangeOffsetY(offset_y);
 
+	for (size_t i = 0; i < winparam::height; i++)
+	{
+		this->KeyUp();
+	}
+	this->p_cur_position_->x = 0;
+	tui_object->WMove(this->p_cur_position_->y, this->p_cur_position_->x);
 }
 
 void ConsoleView::KeyPgDown()
 {
-	int offset_y = this->tui_object->GetOffsetY();
-	if (this->p_cur_position_->y - this->p_last_position_->y > winparam::height)
+	for (size_t i = 0; i < winparam::height; i++)
 	{
-		offset_y = this->p_last_position_->y;
+		this->KeyDown();
 	}
+	this->p_cur_position_->x = 0;
+	tui_object->WMove(this->p_cur_position_->y, this->p_cur_position_->x);
 }
 
 void ConsoleView::KeyEnd()
 {
+	while (this->p_cur_position_->y != this->p_last_position_->y)
+	{
+		this->KeyPgDown();
+	}
+	this->p_cur_position_->x = this->p_last_position_->x;
+	tui_object->WMove(this->p_cur_position_->y, this->p_cur_position_->x);
 }
 
 void ConsoleView::KeyHome()
 {
+	while (this->p_cur_position_->y != 0)
+	{
+		this->KeyPgUp();
+	}
+	this->p_cur_position_->x = 0;
+	tui_object->WMove(this->p_cur_position_->y, this->p_cur_position_->x);
 }
 
 
@@ -416,7 +423,7 @@ void ConsoleView::PrintScreen(MyString& text, const bool new_string, int index)
 	size_t length = text.Length();
 	int x = 0;
 	int y = this->p_cur_position_->y;
-
+	this->after_key = false;
 	int idx = 0;
 	if (y != 0)
 	{
@@ -437,10 +444,15 @@ void ConsoleView::PrintScreen(MyString& text, const bool new_string, int index)
 	this->tui_object->PRefresh();
 	for (size_t i = static_cast<size_t>(idx); i < length; i++)
 	{
-
+		if (y == 9)
+		{
+			y++;
+			--y;
+		}
 		if (text[i] != '\n')
 		{
 			this->tui_object->MvwPrintw(y, x, text[i]);
+			this->tui_object->PRefresh();
 			if (x == 0)
 			{
 				this->p_symbol_map_->operator[](y)[0] = i;
@@ -472,7 +484,7 @@ void ConsoleView::PrintScreen(MyString& text, const bool new_string, int index)
 			}
 			else
 			{
-				if (this->p_symbol_map_->operator[](this->p_cur_position_->y)[1] == winparam::weight && text[i-1] != '\n')
+				if (this->p_symbol_map_->operator[](y-1)[1] == winparam::weight && text[i-1] != '\n')
 				{
 					this->p_symbol_map_->operator[](y - 1)[1] += 1;
 				}
@@ -599,6 +611,8 @@ bool ConsoleView::IsSpecKeyOnPanel(int& x, int sym, MyString& command_)
 }
 
 
+
+
 MyString ConsoleView::GetMyString()
 {
 	MyString string_;
@@ -611,7 +625,14 @@ MyString ConsoleView::GetMyString()
 	{
 		if (!IsSpecKeyOnPanel(x, sym, string_))
 		{
-			string_.Insert(x - pan::read_begin, 1, sym);
+			if (sym == keys::key_escape)
+			{
+				string_.Clear();
+				string_.AppEnd(sym, static_cast<char>(sym));
+				this->tui_object->ClearPannel();
+				break;
+			}
+			string_.Insert(x - pan::read_begin, 1, static_cast<char>(sym));
 			++x;
 			if (x == winparam::weight -1)
 			{
@@ -626,49 +647,6 @@ MyString ConsoleView::GetMyString()
 		this->tui_object->WRefresh();
 		sym = tui_object->Mvwscanf(y, x);
 	}
-
-
-
-
-	/*if (sym == keys::key_backspace)
-	{
-		backspace = true;
-		--x;
-	}
-	this->tui_object->WPanMove(y, x);
-	this->tui_object->WRefresh();
-	while (sym != '\n')
-	{
-		if (!backspace)
-		{
-			string_.AppEnd(1, sym);
-		}
-		if (x == winparam::weight - 1)
-		{
-			break;
-		}
-
-		sym = this->tui_object->Mvwscanf(y, x);
-		++x;
-		if (sym == keys::key_backspace)
-		{
-			backspace = true;
-			--x;
-			if (!string_.Empty())
-			{
-				string_.Erase(x - pan::read_begin - 1, 1);
-				--x;
-			}
-		}
-		else
-		{
-			backspace = false;
-		}
-		this->tui_object->MvwprintPannel(y, x, ' ');
-		this->tui_object->WPanMove(y, x);
-		this->tui_object->WRefresh();
-
-	}*/
 	return string_;
 }
 
@@ -758,7 +736,6 @@ void ConsoleView::NewString(MyString& text)
 
 	}
 	this->tui_object->WMove(this->p_cur_position_->y, this->p_cur_position_->x);
-	
 }
 
 void ConsoleView::EnterSymbol(MyString& text)
@@ -787,6 +764,40 @@ void ConsoleView::DeleteSymbol(MyString& text, bool delete_line)
 	this->tui_object->ClrToBot();
 	this->PrintScreen(text, false, 0);
 	this->tui_object->WMove(this->p_cur_position_->y, this->p_cur_position_->x);
+	this->tui_object->PRefresh();
+}
+
+
+
+void ConsoleView::CountAndCreateLines(MyString& text)
+{
+	size_t length = text.Length();
+	int x = 0;
+	for (size_t i = 0; i < length; i++)
+	{
+		if (text[i] == '\n' || x == winparam::weight)
+		{
+			std::vector<int> new_line =  this->CreateNewLine();
+			this->p_symbol_map_->emplace_back(new_line);
+			x = 0;
+		}
+		++x;
+	}
+
+}
+
+
+void ConsoleView::OpneFile(MyString& text, MyString& file_name)
+{
+	this->tui_object->WMove(0, 0);
+	this->tui_object->ClrToBot();
+	this->CountAndCreateLines(text);
+	this->file_name_ = file_name;
+	this->index_ = 0;
+	this->p_cur_position_->y = 0;
+	this->p_cur_position_->x = 0;
+	this->PrintScreen(text, false, 0);
+	*this->p_cur_position_ = *this->p_last_position_;
 	this->tui_object->PRefresh();
 }
 

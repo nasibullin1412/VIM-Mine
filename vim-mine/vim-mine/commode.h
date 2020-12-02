@@ -21,7 +21,8 @@ enum class ComAction
 	EXIT,
 	EXIT_WITHOUT_SAVE,
 	NUMBER,
-	HELP
+	HELP,
+	EXIT_FROM_THIS_MODE
 };
 
 class ComMode : public MainMode
