@@ -45,10 +45,6 @@ public:
 	virtual ModeType DoAction(int index);
 private:
 	ActionType type_;
-	/*void KeyUp(AdapterPDCur& tui_object);
-	void KeyDown(AdapterPDCur& tui_object);
-	void KeyLeft(AdapterPDCur& tui_object);
-	void KeyRight(AdapterPDCur& tui_object);*/
 	
 };
 

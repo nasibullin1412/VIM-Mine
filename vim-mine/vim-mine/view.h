@@ -75,6 +75,7 @@ private:
     bool	                        CheckNewLine();
     int                             NumberOfDigits(int value);
     void                            DeleteLine();
+    bool                            IsSpecKeyOnPanel(int& x, int sym, MyString& command_);
     
 };
 

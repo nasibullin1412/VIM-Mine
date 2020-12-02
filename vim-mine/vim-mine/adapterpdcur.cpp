@@ -202,9 +202,9 @@ WINDOW* AdapterPDCur::GetPad()
 }
 
 
-void AdapterPDCur::Mvwscanf(int y, int x, MyString& string_)
+int AdapterPDCur::Mvwscanf(int y, int x)
 {
-	mvwscanw(this->pannel_, y, x, "%s", string_.CStr());
+	return mvwgetch(this->pannel_, y, x);
 }
 
 void AdapterPDCur::MvwprintPannel(int y, int x, char sym)

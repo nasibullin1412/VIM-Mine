@@ -3,7 +3,6 @@
 MainMode::MainMode()
 {
 	this->text_ = nullptr;
-
 }
 
 MainMode::~MainMode()

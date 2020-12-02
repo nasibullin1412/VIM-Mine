@@ -20,7 +20,8 @@ public:
 	
 	void InitAllPointers(MyString* text);
 protected:
-	MyString *text_;
+	MyString*	text_;
+
 };
 
 

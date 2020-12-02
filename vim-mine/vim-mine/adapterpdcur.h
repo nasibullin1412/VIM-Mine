@@ -51,7 +51,7 @@ public:
 	bool		NewPad(const int height, const int weight);
 	WINDOW*		GetWindow();
 	WINDOW*		GetPad();
-	void		Mvwscanf(int y, int x, MyString &string_);
+	int			Mvwscanf(int y, int x);
 	void		MvwprintPannel(int y, int x, char sym);
 	int			WMove(const int y, const int x);
 	int			WPanMove(const int y, const int x);

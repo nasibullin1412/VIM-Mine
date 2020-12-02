@@ -540,6 +540,7 @@ void ConsoleView::DeleteLine()
 }
 
 
+
 MyString ConsoleView::UpdatePanel(ModeType& type)
 {
 	MyString command;
@@ -561,12 +562,13 @@ MyString ConsoleView::UpdatePanel(ModeType& type)
 	case ModeType::ENTER_COM_MODE:
 	{
 		this->PrintMyString(0, pan::command_mode);
-
+		command = this->GetMyString();
 		break;
 	}
 	case ModeType::SEARCH_MODE:
 	{
 		this->PrintMyString(0, pan::search_mode);
+		command = this->GetMyString();
 		break;
 	}
 	default:
@@ -577,10 +579,96 @@ MyString ConsoleView::UpdatePanel(ModeType& type)
 	return command;
 }
 
+
+bool ConsoleView::IsSpecKeyOnPanel(int& x, int sym, MyString& command_)
+{
+	if (sym == keys::key_backspace)
+	{
+		if (x != pan::read_begin)
+		{
+			--x;
+			if (!command_.Empty())
+			{
+				command_.Erase(x - pan::read_begin - 1, 1);
+			}
+		}
+		return true;
+	}
+	return false;
+
+}
+
+
 MyString ConsoleView::GetMyString()
 {
 	MyString string_;
-	this->tui_object->Mvwscanf(0, pan::read_begin, string_);
+	int sym = 0;
+	int y = 0;
+	int x = pan::read_begin;
+	bool backspace = false;
+	sym = this->tui_object->Mvwscanf(y, x);
+	while (sym != '\n')
+	{
+		if (!IsSpecKeyOnPanel(x, sym, string_))
+		{
+			string_.Insert(x - pan::read_begin, 1, sym);
+			++x;
+			if (x == winparam::weight -1)
+			{
+				break;
+			}
+		}
+		if (string_.Length() <= x - pan::read_begin)
+		{
+			this->tui_object->MvwprintPannel(y, x, ' ');
+		}
+		this->tui_object->WPanMove(y, x);
+		this->tui_object->WRefresh();
+		sym = tui_object->Mvwscanf(y, x);
+	}
+
+
+
+
+	/*if (sym == keys::key_backspace)
+	{
+		backspace = true;
+		--x;
+	}
+	this->tui_object->WPanMove(y, x);
+	this->tui_object->WRefresh();
+	while (sym != '\n')
+	{
+		if (!backspace)
+		{
+			string_.AppEnd(1, sym);
+		}
+		if (x == winparam::weight - 1)
+		{
+			break;
+		}
+
+		sym = this->tui_object->Mvwscanf(y, x);
+		++x;
+		if (sym == keys::key_backspace)
+		{
+			backspace = true;
+			--x;
+			if (!string_.Empty())
+			{
+				string_.Erase(x - pan::read_begin - 1, 1);
+				--x;
+			}
+		}
+		else
+		{
+			backspace = false;
+		}
+		this->tui_object->MvwprintPannel(y, x, ' ');
+		this->tui_object->WPanMove(y, x);
+		this->tui_object->WRefresh();
+
+	}*/
 	return string_;
 }
 

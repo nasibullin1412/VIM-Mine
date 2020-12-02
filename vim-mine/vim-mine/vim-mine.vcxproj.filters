@@ -45,6 +45,9 @@
     <ClCompile Include="entersymbolmode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="commode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="observ.h">
@@ -78,6 +81,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="entersymbolmode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="commode.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

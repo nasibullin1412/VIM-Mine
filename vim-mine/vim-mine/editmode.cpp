@@ -104,6 +104,10 @@ ModeType EditMode::DoAction(int index)
 	{
 		return ModeType::ENTER_SYM_MODE;
 	}
+	case ActionType::GO_TO_COMMAND_MODE:
+	{
+		return ModeType::ENTER_COM_MODE;
+	}
 	default:
 		break;
 	}
