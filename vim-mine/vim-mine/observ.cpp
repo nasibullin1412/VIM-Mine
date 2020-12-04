@@ -48,13 +48,33 @@ void Observable::NotifyEnterSymbol(MyString& text)
     this->observers_[0]->EnterSymbol(text);
 }
 
-void Observable::NotifyDeleteSymbol(MyString& text, bool delete_line)
+void Observable::NotifyDeleteSymbol(MyString& text, bool delete_line, const int index)
 {
-    this->observers_[0]->DeleteSymbol(text, delete_line);
+    this->observers_[0]->DeleteSymbol(text, delete_line, index);
 }
 
 void Observable::NotifyOpenFile(MyString& text, MyString& file_name)
 {
     this->observers_[0]->OpneFile(text, file_name);
+}
+
+void Observable::NotifySetToBeginString(MyString& text)
+{
+    this->observers_[0]->SetToBeginString(text);
+}
+
+void Observable::NotifySetToEndString(MyString& text)
+{
+    this->observers_[0]->SetToEndString(text);
+}
+
+void Observable::NotifyDeleteStringPrep(MyString& text, const int index)
+{
+    this->observers_[0]->DeleteStringPrep(text, index);
+}
+
+void Observable::NotifyChangeOneSymbol()
+{
+    this->observers_[0]->ChangeOneSymbol();
 }
 

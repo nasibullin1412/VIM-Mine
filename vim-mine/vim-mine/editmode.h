@@ -22,7 +22,11 @@ enum class ActionType
 	COPY_CUR_STRING,
 	COPY_CUR_WORD,
 	PASTE_AFTER_CURSOR,
-	GO_TO_ENTER_MODE,
+	GO_TO_ENTER_MODE, 
+	GO_TO_ENTER_SYMBOL_BIG_I,
+	ENTER_SYMBOL_A,
+	ENTER_SYMBOL_S,
+	ENTER_SYMBOL_R,
 	GO_TO_COMMAND_MODE,
 	GO_TO_FIND_MODE_TO_END,
 	GO_TO_FIND_MODE_TO_BEGIN,
@@ -43,9 +47,13 @@ public:
 	~EditMode();
 	virtual bool HandleAction(MyString &command);
 	virtual ModeType DoAction(int index);
+
 private:
 	ActionType type_;
-	
+
+	void	InsertFromBeginString();
+	void	InsertFromEndString();
+	void	DeleteStringAndStartInsert();
 };
 
 #endif

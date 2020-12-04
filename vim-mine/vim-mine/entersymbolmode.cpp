@@ -8,8 +8,6 @@ EnterSymbolMode::EnterSymbolMode()
 {
     this->type_ = SymbolModeActions::INIT_VALUE;
     this->is_first = true;
-    this->new_symbol_ = 0;
-    this->index = 0;
 }
 
 EnterSymbolMode::~EnterSymbolMode()
@@ -24,7 +22,7 @@ bool EnterSymbolMode::HandleAction(MyString& command)
         idx = 1;
         this->is_first = false;
     }
-    this->new_symbol_ = command[idx];
+    *this->new_symbol_ = command[idx];
     switch (command[idx])
     {
     case keys::key_escape:
@@ -45,52 +43,26 @@ bool EnterSymbolMode::HandleAction(MyString& command)
     default:
         break;
     }
-    if (idx == 0 )
-    {
-        this->type_ = SymbolModeActions::ENTER_SYMBOL_SMALL_I;
-        return true;
-    }
-    switch (command[0])
-    {
-    case 'i':
-    {
-        this->type_ = SymbolModeActions::ENTER_SYMBOL_SMALL_I;
-        return true;
-    }
-    case 'I':
-    {
-        this->type_ = SymbolModeActions::ENTER_SYMBOL_BIG_I;
-        return true;
-    }
-    case 'A':
-    {
-        this->type_ = SymbolModeActions::ENTER_SYMBOL_A;
-        return true;
-    }
-    case 'S':
-    {
-        this->type_ = SymbolModeActions::ENTER_SYMBOL_S;
-        return true;
-    }
-    case 'r':
-    {
-        this->type_ = SymbolModeActions::ENTER_SYMBOL_R;
-        return true;
-    }
-    default:
-        return false;
-    }
+    this->type_ = SymbolModeActions::ENTER_SYMBOL_SMALL_I;
+    return true;
 }
 
 
 
 ModeType EnterSymbolMode::DoAction(int index)
 {
-    this->index = index;
+    *this->index = index;
     switch (this->type_)
     {
     case SymbolModeActions::ENTER_SYMBOL_SMALL_I:
     {
+        if (*this->r_insert_mode_)
+        {
+            this->ChangeOneSymbol();
+            *this->r_insert_mode_ = false;
+            this->is_first = true;
+            return ModeType::EDIT_MODE;
+        }
         this->EnterSymbol();
         break;
     }
@@ -116,34 +88,28 @@ ModeType EnterSymbolMode::DoAction(int index)
 }
 
 
-
-
-void EnterSymbolMode::EnterSymbol()
-{
-    this->text_->Insert(this->index, 1, this->new_symbol_);
-    this->NotifyEnterSymbol(*this->text_);
-    return;
-}
-
-
-
 void EnterSymbolMode::NewString()
 {
-    this->text_->Insert(this->index, "\n");
+    this->text_->Insert(*this->index, "\n");
     this->NotifyNewString(*this->text_);
     this->NotifyDoRefreash();
 }
 
-void EnterSymbolMode::DeleteSymbol()
+void EnterSymbolMode::ChangeOneSymbol()
 {
-    bool delete_line = false;
-    if (index != 0)
+    if (*this->index == this->text_->Length())
     {
-        if (this->text_->operator[](this->index - 1) == '\n')
-        {
-            delete_line = true;
-        }
-        this->text_->Erase(this->index-1, 1);
-        this->NotifyDeleteSymbol(*this->text_, delete_line);
+        return;
     }
+    if (this->text_->operator[](*this->index) == '\n')
+    {
+        return;
+    }
+    *this->index += 1;
+    this->DeleteSymbol();
+    *this->index -= 1;
+    this->EnterSymbol();
+    this->NotifyChangeOneSymbol();
 }
+
+

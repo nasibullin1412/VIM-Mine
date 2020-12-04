@@ -1,12 +1,4 @@
-cdcdcdcdcdcd
-cd
-cd
-c
-dc
+abcd
 d
-cd
-c
-dc
-d
-c
-d
+fg
+k

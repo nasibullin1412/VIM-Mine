@@ -36,11 +36,10 @@ public:
 private:
 	SymbolModeActions		type_;
 	bool					is_first;
-	char					new_symbol_;
-	int						index;
-	void					EnterSymbol();
+
+
 	void					NewString();
-	void					DeleteSymbol();
+	void					ChangeOneSymbol();
 };
 
 

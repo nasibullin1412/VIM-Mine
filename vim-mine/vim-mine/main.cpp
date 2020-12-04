@@ -17,19 +17,20 @@ int main()
 	first_string[0] = 0;
 	map.emplace_back(first_string);
 	ConsoleView view_;
-
+	bool r_mode_insert = false;
+	char new_symbol = 0;
 	EditMode obj;
 	obj.AddObserver(&view_);
-	obj.InitAllPointers(&text_);
+	obj.InitAllPointers(&text_, &r_mode_insert, &index, &new_symbol);
 	
 
 	EnterSymbolMode obj_last;
 	obj_last.AddObserver(&view_);
-	obj_last.InitAllPointers(&text_);
+	obj_last.InitAllPointers(&text_, &r_mode_insert, &index, &new_symbol);
 
 	ComMode commode_obj;
 	commode_obj.AddObserver(&view_);
-	commode_obj.InitAllPointers(&text_);
+	commode_obj.InitAllPointers(&text_, &r_mode_insert, &index, &new_symbol);
 
 	list_.emplace_back(&obj);
 	list_.emplace_back(&obj_last);

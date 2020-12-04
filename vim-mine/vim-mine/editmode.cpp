@@ -66,16 +66,16 @@ bool EditMode::HandleAction(MyString& command)
 		this->type_ = ActionType::GO_TO_ENTER_MODE;
 		return true;
 	case 15:
-		this->type_ = ActionType::GO_TO_ENTER_MODE;
+		this->type_ = ActionType::GO_TO_ENTER_SYMBOL_BIG_I;
 		return true;
 	case 16:
-		this->type_ = ActionType::GO_TO_ENTER_MODE;
+		this->type_ = ActionType::ENTER_SYMBOL_A;
 		return true;
 	case 17:
-		this->type_ = ActionType::GO_TO_ENTER_MODE;
+		this->type_ = ActionType::ENTER_SYMBOL_S;
 		return true;
 	case 18:
-		this->type_ = ActionType::GO_TO_ENTER_MODE;
+		this->type_ = ActionType::ENTER_SYMBOL_R;
 		return true;
 	case 19:
 		this->type_ = ActionType::GO_TO_COMMAND_MODE;
@@ -98,10 +98,31 @@ bool EditMode::HandleAction(MyString& command)
 
 ModeType EditMode::DoAction(int index)
 {
+	*this->index = index;
 	switch (this->type_)
 	{
 	case ActionType::GO_TO_ENTER_MODE:
 	{
+		return ModeType::ENTER_SYM_MODE;
+	}
+	case ActionType::GO_TO_ENTER_SYMBOL_BIG_I:
+	{
+		this->InsertFromBeginString();
+		return ModeType::ENTER_SYM_MODE;
+	}
+	case ActionType::ENTER_SYMBOL_A:
+	{
+		this->InsertFromEndString();
+		return ModeType::ENTER_SYM_MODE;
+	}
+	case ActionType::ENTER_SYMBOL_S:
+	{
+		this->DeleteStringAndStartInsert();
+		return ModeType::ENTER_SYM_MODE;
+	}
+	case ActionType::ENTER_SYMBOL_R:
+	{
+		*this->r_insert_mode_ = true;
 		return ModeType::ENTER_SYM_MODE;
 	}
 	case ActionType::GO_TO_COMMAND_MODE:
@@ -116,5 +137,30 @@ ModeType EditMode::DoAction(int index)
 }
 
 
+void EditMode::InsertFromBeginString()
+{
+	this->NotifySetToBeginString(*this->text_);
+}
 
+void EditMode::InsertFromEndString()
+{
+	this->NotifySetToEndString(*this->text_);
+}
+
+void EditMode::DeleteStringAndStartInsert()
+{
+
+	int size = static_cast<int>(this->text_->Length());
+	while (*this->index < size && this->text_->operator[](*this->index) != '\n')
+	{
+		*this->index +=1;
+	}
+	this->NotifyDeleteStringPrep(*this->text_, *this->index);
+	while (*this->index > 0 && this->text_->operator[](*this->index - 1) != '\n')
+	{
+		this->DeleteSymbol();
+		*this->index -=1;
+	}
+
+}
 

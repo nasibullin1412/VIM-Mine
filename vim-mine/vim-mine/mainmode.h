@@ -18,10 +18,16 @@ public:
 	virtual bool HandleAction(MyString& command) = 0;
 	virtual ModeType DoAction(int index) = 0;
 	
-	void InitAllPointers(MyString* text);
+	void InitAllPointers(MyString* text, bool* r_insert_mode, int *index, char* new_symbol);
 protected:
 	MyString*	text_;
+	bool*		r_insert_mode_;
+	int*		index;
+	char*		new_symbol_;
 
+
+	void		EnterSymbol();
+	void		DeleteSymbol();
 };
 
 

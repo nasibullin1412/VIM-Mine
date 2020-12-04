@@ -11,7 +11,10 @@ ConsoleView::ConsoleView()
 	this->p_controller_ = nullptr;
 	this->file_name_;
 	this->index_ = 0;
-	this->after_key = false;
+	this->after_key_ = false;
+	this->after_beg_str_ = false;
+	this->old_offset_ = 0;
+	this->special_key_ = false;
 }
 
 ConsoleView::~ConsoleView()
@@ -52,14 +55,16 @@ void ConsoleView::BeginExecute()
 			symbol = this->ReadSymbol();
 			command.AppEnd(1, symbol);
 		}
-		if (!this->DirectionKeys(symbol))
+		if (!special_key_)
 		{
 			this->SetActualIndex(symbol);
 			type =  this->p_controller_->InfoController(this->index_, command);
 		}
 		else
 		{
-			this->after_key = true;
+			this->DirectionKeys(symbol);
+			this->after_key_ = true;
+			this->special_key_ = false;
 		}
 		command.Clear();
 		command.ShrinkToFit();
@@ -74,6 +79,10 @@ char ConsoleView::ReadSymbol()
 	this->tui_object->NoEcho();
 	int symbol = 0;
 	symbol = this->tui_object->GetCh();
+	if (symbol > 127)
+	{
+		special_key_ = true;
+	}
 	this->tui_object->Echo();
 	return symbol;
 }
@@ -132,14 +141,13 @@ int ConsoleView::SetActualIndex(const char symbol)
 {
 	int x, y = 0;
 	this->tui_object->GetYX(y, x);
-	if (x != 0 || y == 0 || this->p_symbol_map_->operator[](y - 1)[1] != winparam::weight + 1 || symbol == '\n')
+	if (x != 0 || y == 0 || this->p_symbol_map_->operator[](y - 1)[1] != winparam::weight + 1 || symbol == '\n' || this->p_symbol_map_->operator[](y)[1] == 0)
 	{
-	
 		this->index_ = this->p_symbol_map_->operator[](y)[0] + x;
 	}
 	else
 	{
-		if (this->p_symbol_map_->operator[](y)[1] == 1 && this->p_cur_position_->y != this->p_last_position_->y || after_key)
+		if (this->p_symbol_map_->operator[](y)[1] == 1 && this->p_cur_position_->y != this->p_last_position_->y || after_key_)
 		{
 			this->index_ = this->p_symbol_map_->operator[](y)[0] + x; //когда строка выше переполнена и на текущей строке только \n или пришли на данную позицию с помощью клавы
 		}
@@ -393,7 +401,7 @@ std::vector<int> ConsoleView::CreateNewLine()
 
 void ConsoleView::NextCursorPos(int& y, int& x)
 {
-	if (x == winparam::weight - 1)
+	if (x >= winparam::weight - 1)
 	{
 		this->DownCursor(true, y, x);
 	}
@@ -423,14 +431,21 @@ void ConsoleView::PrintScreen(MyString& text, const bool new_string, int index)
 	size_t length = text.Length();
 	int x = 0;
 	int y = this->p_cur_position_->y;
-	this->after_key = false;
+	if (this->after_beg_str_)
+	{
+		this->after_beg_str_ = false;
+	}
+	else
+	{
+		this->after_key_ = false;
+	}
 	int idx = 0;
 	if (y != 0)
 	{
 		idx = this->p_symbol_map_->operator[](y - 1)[0] + this->p_symbol_map_->operator[](y - 1)[1];
-		if (!new_string && this->p_cur_position_->x == 0 && this->p_symbol_map_->operator[](y -1)[1] == winparam::weight + 1)
+		if (!new_string && this->p_cur_position_->x == 0 && this->p_symbol_map_->operator[](y -1)[1] == winparam::weight + 1) //если из при вводе символа, начиная со позиции x = 0 b c перегруженной строкой выше 
 		{
-			if (text[idx + 1] != '\n')
+			if (text[idx + 1] != '\n')//если не с новой строки
 			{
 				--idx;
 				--this->p_symbol_map_->operator[](y - 1)[1];
@@ -444,7 +459,7 @@ void ConsoleView::PrintScreen(MyString& text, const bool new_string, int index)
 	this->tui_object->PRefresh();
 	for (size_t i = static_cast<size_t>(idx); i < length; i++)
 	{
-		if (y == 9)
+		if (y== 7)
 		{
 			y++;
 			--y;
@@ -466,25 +481,32 @@ void ConsoleView::PrintScreen(MyString& text, const bool new_string, int index)
 		}
 		else
 		{
-			if (x != 0 || new_string)
+			if (x != 0 || new_string)// если не из новой строки вызвана или не с нулевой позиции
 			{
-				if (x == 0)
+				if (x == 0 && i != 0 && this->p_symbol_map_->operator[](y-1)[1] == winparam::weight && text[i-1] != '\n')
+				{
+					this->p_symbol_map_->operator[](y - 1)[1] += 1;
+					continue;// в случае, когда полная строка с \n на конце и вбивается выше
+				}
+				if (x == 0) //если позиция 0
 				{
 					if (i != 0)
 					{
-						this->p_symbol_map_->operator[](y)[0] = this->p_symbol_map_->operator[](y-1)[1] + this->p_symbol_map_->operator[](y-1)[0];
+						this->p_symbol_map_->operator[](y)[0] = this->p_symbol_map_->operator[](y - 1)[1] + this->p_symbol_map_->operator[](y - 1)[0]; // когда только \n в строке
 					}
 					this->p_symbol_map_->operator[](y)[1] = 1;
+
+					this->DownCursor(true, y, x);
 				}
 				else
 				{
 					this->p_symbol_map_->operator[](y)[1] += 1;
+					this->DownCursor(true, y, x);
 				}
-				this->DownCursor(true, y, x);
 			}
 			else
 			{
-				if (this->p_symbol_map_->operator[](y-1)[1] == winparam::weight && text[i-1] != '\n')
+				if (i != 0 && this->p_symbol_map_->operator[](y-1)[1] == winparam::weight && text[i-1] != '\n')
 				{
 					this->p_symbol_map_->operator[](y - 1)[1] += 1;
 				}
@@ -515,7 +537,7 @@ void ConsoleView::ClearScreen()
 
 bool ConsoleView::CheckNewLine()
 {
-	if (this->p_cur_position_->x == winparam::weight - 1 || this->p_symbol_map_->operator[](this->p_cur_position_->y)[1] == winparam::weight+1)
+	if (this->p_cur_position_->x == winparam::weight - 1 || this->p_symbol_map_->operator[](this->p_cur_position_->y)[1] >= winparam::weight)
 	{
 		std::vector<int> new_line = this->CreateNewLine();
 		this->p_symbol_map_->emplace_back(new_line);
@@ -537,11 +559,19 @@ int ConsoleView::NumberOfDigits(int value)
 
 void ConsoleView::DeleteLine()
 {
+	if (this->p_cur_position_->x == 0 && this->p_cur_position_->y != 0)
+	{
+		if (this->p_symbol_map_->operator[](this->p_cur_position_->y - 1)[1] == winparam::weight+1)
+		{
+			return;
+		}
+	}
 	std::vector<std::vector<int>>::iterator it;
 	it = this->p_symbol_map_->begin();
 	it += this->p_cur_position_->y;
 	this->p_symbol_map_->erase(it);
-	this->p_cur_position_->y -= 1;
+
+	this->KeyUp();
 	this->p_cur_position_->x = this->p_symbol_map_->operator[](this->p_cur_position_->y)[1] - 1;
 	if (this->p_cur_position_->x < 0)
 	{
@@ -628,7 +658,7 @@ MyString ConsoleView::GetMyString()
 			if (sym == keys::key_escape)
 			{
 				string_.Clear();
-				string_.AppEnd(sym, static_cast<char>(sym));
+				string_.AppEnd(1, static_cast<char>(sym));
 				this->tui_object->ClearPannel();
 				break;
 			}
@@ -725,16 +755,14 @@ void ConsoleView::NewString(MyString& text)
 		this->p_symbol_map_->insert(it, new_line);
 		this->PrintScreen(text, true, 0);
 		this->DownCursor(true, this->p_cur_position_->y, this->p_cur_position_->x);
-		
-		
 	}
 	else
 	{
 		this->p_symbol_map_->operator[](y - 1)[1] += 1;
 		this->p_symbol_map_->operator[](y)[0] = text.Length();
 		this->p_symbol_map_->operator[](y)[1] += 0;
-
 	}
+	this->ReturnToCurLine();
 	this->tui_object->WMove(this->p_cur_position_->y, this->p_cur_position_->x);
 }
 
@@ -744,15 +772,20 @@ void ConsoleView::EnterSymbol(MyString& text)
 	this->ClearScreen();
 	this->DoRefreash();
 	this->CheckNewLine();
+	this->old_offset_ = this->tui_object->GetOffsetY();
 	this->PrintScreen(text, false, this->index_);
+	this->ReturnToCurLine();
 	this->NextCur();
 	this->DoRefreash();
 }
 
 
 
-void ConsoleView::DeleteSymbol(MyString& text, bool delete_line)
+void ConsoleView::DeleteSymbol(MyString& text, bool delete_line, const int index)
 {
+	this->index_ = index;
+	this->after_beg_str_ = true;
+	//this->SetToBeginString(text);
 	if (delete_line)
 	{
 		this->DeleteLine();
@@ -762,7 +795,9 @@ void ConsoleView::DeleteSymbol(MyString& text, bool delete_line)
 		this->PrevCursorPos(this->p_cur_position_->y, this->p_cur_position_->x);
 	}
 	this->tui_object->ClrToBot();
+	this->old_offset_ = this->tui_object->GetOffsetY();
 	this->PrintScreen(text, false, 0);
+	this->ReturnToCurLine();
 	this->tui_object->WMove(this->p_cur_position_->y, this->p_cur_position_->x);
 	this->tui_object->PRefresh();
 }
@@ -777,13 +812,26 @@ void ConsoleView::CountAndCreateLines(MyString& text)
 	{
 		if (text[i] == '\n' || x == winparam::weight)
 		{
-			std::vector<int> new_line =  this->CreateNewLine();
-			this->p_symbol_map_->emplace_back(new_line);
-			x = 0;
+			if (text[i] != '\n' || x != winparam::weight+1)
+			{
+				std::vector<int> new_line = this->CreateNewLine();
+				this->p_symbol_map_->emplace_back(new_line);
+				x = 0;
+			}
 		}
-		++x;
+		else
+		{
+			++x;
+		}
 	}
 
+}
+
+void ConsoleView::ReturnToCurLine()
+{
+	int y = this->tui_object->GetOffsetY();
+	this->tui_object->ChangeOffsetY(old_offset_ - y);
+	this->tui_object->PRefresh();
 }
 
 
@@ -799,5 +847,70 @@ void ConsoleView::OpneFile(MyString& text, MyString& file_name)
 	this->PrintScreen(text, false, 0);
 	*this->p_cur_position_ = *this->p_last_position_;
 	this->tui_object->PRefresh();
+}
+
+void ConsoleView::SetToBeginString(MyString& text)
+{
+	this->after_beg_str_ = true;
+	int y = this->p_cur_position_->y;
+	if (y == 0)
+	{
+		this->p_cur_position_->x = 0;
+		return;
+	}
+	int cur_index = this->p_symbol_map_->operator[](y - 1)[0] + this->p_symbol_map_->operator[](y - 1)[1];
+	while (y != 0 && this->p_symbol_map_->operator[](y-1)[1] == winparam::weight && text[cur_index] != '\n')
+	{
+		--y;
+		cur_index = this->p_symbol_map_->operator[](y - 1)[0] + this->p_symbol_map_->operator[](y - 1)[1];
+	}
+	this->p_cur_position_->y = y;
+	this->p_cur_position_->x = 0;
+	this->tui_object->WMove(this->p_cur_position_->y, this->p_cur_position_->x);
+	this->tui_object->PRefresh();
+}
+
+void ConsoleView::SetToEndString(MyString& text)
+{
+	this->after_beg_str_ = true;
+	int y = this->p_cur_position_->y;
+	int cur_index = this->p_symbol_map_->operator[](y)[0] + this->p_symbol_map_->operator[](y)[1];
+	while (y != this->p_last_position_->y && this->p_symbol_map_->operator[](y)[1] == winparam::weight && text[cur_index] != '\n')
+	{
+		++y;
+		cur_index = this->p_symbol_map_->operator[](y)[0] + this->p_symbol_map_->operator[](y)[1];
+	}
+	this->p_cur_position_->y = y;
+	this->p_cur_position_->x = this->p_symbol_map_->operator[](y)[1] - 1;
+	if (this->p_cur_position_->x < 0)
+	{
+		this->p_cur_position_->x = 0;
+	}
+	if (this->p_cur_position_->x >= winparam::weight)
+	{
+		this->NextCursorPos(this->p_cur_position_->y, this->p_cur_position_->x);
+	}
+	this->tui_object->WMove(this->p_cur_position_->y, this->p_cur_position_->x);
+	this->tui_object->PRefresh();
+}
+
+void ConsoleView::DeleteStringPrep(MyString& text, const int index)
+{
+	int y = this->p_cur_position_->y;
+	this->SetToEndString(text);
+	if (this->p_cur_position_->x == 0 && y != this->p_cur_position_->y)
+	{
+		if (this->p_symbol_map_->operator[](y - 1)[1] == winparam::weight+1)
+		{
+			this->p_cur_position_->y = y - 1;
+			this->p_cur_position_->x = winparam::weight - 1;
+		}
+	}
+	this->index_ = index;
+}
+
+void ConsoleView::ChangeOneSymbol()
+{
+	this->after_key_ = true;
 }
 

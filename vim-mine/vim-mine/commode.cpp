@@ -14,7 +14,9 @@ ComMode::~ComMode()
 bool ComMode::HandleAction(MyString& command)
 {
 	this->command_ = command;
-	if (command[0] == keys::key_escape)
+	MyString escape_;
+	escape_.AppEnd(1, keys::key_escape);
+	if (command_.Find(escape_.CStr()) != -1)
 	{
 		this->type_ = ComAction::EXIT_FROM_THIS_MODE;
 		return true;

@@ -40,8 +40,12 @@ public:
     virtual void    PrevCur();
     virtual void	NewString(MyString& text);
     virtual void    EnterSymbol(MyString& text);
-    virtual void	DeleteSymbol(MyString& text, bool delete_line);
+    virtual void	DeleteSymbol(MyString& text, bool delete_line, const int index);
     virtual void	OpneFile(MyString& text, MyString& file_name);
+    virtual void	SetToBeginString(MyString& text);
+    virtual void	SetToEndString(MyString& text);
+    virtual void	DeleteStringPrep(MyString& text, const int index);
+    virtual void	ChangeOneSymbol();
 
 private:
     AdapterPDCur*                   tui_object;
@@ -51,7 +55,10 @@ private:
     Position*                       p_cur_position_;
     MyString                        file_name_;
     int                             index_;
-    bool                            after_key;
+    bool                            after_key_;
+    bool                            after_beg_str_;
+    int                             old_offset_;
+    bool                            special_key_;
 
     MyString                        UpdatePanel(ModeType& type);
     MyString                        GetMyString();
@@ -79,6 +86,7 @@ private:
     void                            DeleteLine();
     bool                            IsSpecKeyOnPanel(int& x, int sym, MyString& command_);
     void                            CountAndCreateLines(MyString& text);
+    void                            ReturnToCurLine();
 };
 
 

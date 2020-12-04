@@ -35,8 +35,13 @@ public:
 	virtual void	PrevCur() = 0;
 	virtual void	NewString(MyString& text) = 0;
 	virtual void    EnterSymbol(MyString& text) = 0;
-	virtual void	DeleteSymbol(MyString& text, bool delete_line) = 0;
+	virtual void	DeleteSymbol(MyString& text, bool delete_line, const int index) = 0;
 	virtual void	OpneFile(MyString& text, MyString& file_name) = 0;
+	virtual void	SetToBeginString(MyString& text) = 0;
+	virtual void	SetToEndString(MyString& text) = 0;
+	virtual void	DeleteStringPrep(MyString& text, const int index) = 0;
+	virtual void	ChangeOneSymbol() = 0;
+
 };
 
 class Observable
@@ -51,9 +56,12 @@ public:
 	void	NotifyPrevCurs();
 	void	NotifyNewString(MyString& text);
 	void	NotifyEnterSymbol(MyString& text);
-	void	NotifyDeleteSymbol(MyString& text, bool delete_line);
+	void	NotifyDeleteSymbol(MyString& text, bool delete_line, const int index);
 	void	NotifyOpenFile(MyString& text, MyString& file_name);
-
+	void	NotifySetToBeginString(MyString& text);
+	void	NotifySetToEndString(MyString& text);
+	void	NotifyDeleteStringPrep(MyString& text, const int index);
+	void	NotifyChangeOneSymbol();
 
 private:
 	std::vector<Observer*> observers_;
