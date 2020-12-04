@@ -187,6 +187,7 @@ bool ComMode::SaveToOtherFile()
 		return false;
 	}
 	this->NotifyChangeCurFileName(this->file_);
+	*this->is_change_ = false;
 	return true;
 }
 
@@ -204,6 +205,7 @@ bool ComMode::SaveToFile()
 	}
 	fout.write(this->text_->CStr(), this->text_->Length());
 	fout.close();
+	*this->is_change_ = false;
 	return true;
 }
 
@@ -250,7 +252,10 @@ bool ComMode::ReadFile()
 	int symbol = fin.get();
 	while (!fin.eof())
 	{
-		this->text_->AppEnd(1, symbol);
+		if (symbol != '\r')
+		{
+			this->text_->AppEnd(1, symbol);
+		}
 		symbol = fin.get();
 	}
 	this->NotifyOpenFile(*this->text_, this->file_);

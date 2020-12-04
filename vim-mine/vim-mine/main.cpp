@@ -2,6 +2,7 @@
 #include "editmode.h"
 #include "commode.h"
 #include "entersymbolmode.h"
+#include "searchmode.h"
 #include "view.h"
 
 
@@ -34,9 +35,15 @@ int main()
 	commode_obj.AddObserver(&view_);
 	commode_obj.InitAllPointers(&text_, &r_mode_insert, &index, &new_symbol, &change);
 
+	SearchMode search_obj;
+	search_obj.AddObserver(&view_);
+	search_obj.InitAllPointers(&text_, &r_mode_insert, &index, &new_symbol, &change);
+
+
 	list_.emplace_back(&obj);
 	list_.emplace_back(&obj_last);
 	list_.emplace_back(&commode_obj);
+	list_.emplace_back(&search_obj);
 	AdapterPDCur tui_object;
 	Controller contr_object(&list_);
 	view_.InitAllPointers(&tui_object, &map, &last_position, &cur_position, &contr_object);

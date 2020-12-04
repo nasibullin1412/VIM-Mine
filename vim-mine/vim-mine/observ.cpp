@@ -93,4 +93,13 @@ void Observable::NotifyHelpInfo(MyString& help_info, MyString& text)
     this->observers_[0]->HelpInfo(help_info, text);
 }
 
+void Observable::NotifySearchWord(MyString& text, const int index)
+{
+    this->observers_[0]->SearchWord(text, index);
+}
+
+void Observable::NotifySearchToBegin()
+{
+    this->observers_[0]->SearchToBegin();
+}
 

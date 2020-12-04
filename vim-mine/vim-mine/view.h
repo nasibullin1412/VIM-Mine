@@ -9,7 +9,8 @@ namespace pan
 {
     const MyString  edit_mode = "--EDIT AND NAVIGATE--";
     const MyString  insert_mode = "--INSERT--";
-    const MyString  search_mode = "\\";
+    const MyString  search_mode_to_end = "/";
+    const MyString  search_mode_to_begin = "?";
     const MyString  command_mode = ":";
     const MyString  default_file_name = "NONE";
     constexpr int   statistic_begin = 80;
@@ -49,6 +50,8 @@ public:
     virtual void	ChangeCurFileName(MyString& file_name);
     virtual void	SetCurYByIndex(MyString& text, const int index);
     virtual void	HelpInfo(MyString& help_info, MyString& text);
+    virtual void	SearchWord(MyString& text, const int index);
+    virtual void	SearchToBegin();
 
 private:
     AdapterPDCur*                   tui_object;
@@ -62,6 +65,8 @@ private:
     bool                            after_beg_str_;
     int                             old_offset_;
     bool                            special_key_;
+    bool                            is_search;
+    bool                            search_to_begin_;
 
     MyString                        UpdatePanel(ModeType& type);
     MyString                        GetMyString();

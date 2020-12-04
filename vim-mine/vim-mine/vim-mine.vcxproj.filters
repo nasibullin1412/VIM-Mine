@@ -48,6 +48,9 @@
     <ClCompile Include="commode.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="searchmode.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="observ.h">
@@ -84,6 +87,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="commode.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="searchmode.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

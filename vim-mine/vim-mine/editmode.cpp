@@ -129,6 +129,15 @@ ModeType EditMode::DoAction(int index)
 	{
 		return ModeType::ENTER_COM_MODE;
 	}
+	case ActionType::GO_TO_FIND_MODE_TO_BEGIN:
+	{
+		this->NotifySearchToBegin();
+		return ModeType::SEARCH_MODE;
+	}
+	case ActionType::GO_TO_FIND_MODE_TO_END:
+	{
+		return ModeType::SEARCH_MODE;
+	}
 	default:
 		break;
 	}

@@ -15,6 +15,8 @@ ConsoleView::ConsoleView()
 	this->after_beg_str_ = false;
 	this->old_offset_ = 0;
 	this->special_key_ = false;
+	this->is_search = false;
+	this->search_to_begin_ = false;
 }
 
 ConsoleView::~ConsoleView()
@@ -37,7 +39,6 @@ void ConsoleView::InitAllPointers(AdapterPDCur* tui_object, std::vector<std::vec
 
 void ConsoleView::BeginExecute()
 {
-	
 	this->tui_object->InitScr();
 	this->tui_object->NewPad(winparam::real_size, winparam::weight);
 	this->tui_object->PRefresh();
@@ -59,6 +60,10 @@ void ConsoleView::BeginExecute()
 		{
 			this->SetActualIndex(symbol);
 			type =  this->p_controller_->InfoController(this->index_, command);
+			if (type != ModeType::SEARCH_MODE)
+			{
+				this->is_search = false;
+			}
 		}
 		else
 		{
@@ -89,6 +94,10 @@ char ConsoleView::ReadSymbol()
 
 bool ConsoleView::DirectionKeys(const char symbol)
 {
+	if (this->is_search)
+	{
+		return false;
+	}
 	switch (symbol)
 	{
 	case keys::key_up: 
@@ -618,8 +627,19 @@ MyString ConsoleView::UpdatePanel(ModeType& type)
 	}
 	case ModeType::SEARCH_MODE:
 	{
-		this->PrintMyString(0, pan::search_mode);
-		command = this->GetMyString();
+		if (!this->is_search)
+		{
+			if (this->search_to_begin_)
+			{
+				this->PrintMyString(0, pan::search_mode_to_begin);
+			}
+			else
+			{
+				this->PrintMyString(0, pan::search_mode_to_end);
+			}
+			command = this->GetMyString();
+			this->is_search = true;
+		}
 		break;
 	}
 	default:
@@ -938,6 +958,10 @@ void ConsoleView::ChangeCurFileName(MyString& file_name)
 	this->file_name_ = file_name;
 }
 
+/*
+Функция изменяет cur_y основываясь на новой позиции в тексте.
+*/
+
 void ConsoleView::SetCurYByIndex(MyString& text, const int index)
 {
 	int y = this->p_cur_position_->y;
@@ -1013,5 +1037,21 @@ void ConsoleView::HelpInfo(MyString& help_info, MyString& text)
 	this->ReturnToCurLine();
 	this->tui_object->WMove(temp_y, temp_x);
 	this->tui_object->PRefresh();
+}
+
+
+
+void ConsoleView::SearchWord(MyString& text, const int index)
+{
+	this->SetCurYByIndex(text, index);
+	this->p_cur_position_->x = index - this->p_symbol_map_->operator[](this->p_cur_position_->y)[0];
+	this->tui_object->WMove(this->p_cur_position_->y, this->p_cur_position_->x);
+	this->tui_object->PRefresh();
+}
+
+void ConsoleView::SearchToBegin()
+{
+	this->search_to_begin_ = true;
+	this->after_key_ = true;
 }
 

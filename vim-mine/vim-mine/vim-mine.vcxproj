@@ -149,6 +149,7 @@
     <ClCompile Include="mystring.cpp" />
     <ClCompile Include="observ.cpp" />
     <ClCompile Include="postion.cpp" />
+    <ClCompile Include="searchmode.cpp" />
     <ClCompile Include="view.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -163,6 +164,7 @@
     <ClInclude Include="observ.h" />
     <ClInclude Include="panel.h" />
     <ClInclude Include="postion.h" />
+    <ClInclude Include="searchmode.h" />
     <ClInclude Include="view.h" />
   </ItemGroup>
   <ItemGroup>

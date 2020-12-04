@@ -45,6 +45,8 @@ public:
 	virtual void	ChangeCurFileName(MyString& file_name) = 0;
 	virtual void	SetCurYByIndex(MyString& text, const int index) = 0;
 	virtual void	HelpInfo(MyString& help_info, MyString& text) = 0;
+	virtual void	SearchWord(MyString& text, const int index) = 0;
+	virtual void	SearchToBegin() = 0;
 };
 
 class Observable
@@ -68,6 +70,8 @@ public:
 	void	NotifyChangeCurFileName(MyString& file_name);
 	void    NotifySetCurYByIndex(MyString& text, const int index);
 	void	NotifyHelpInfo(MyString& help_info, MyString& text);
+	void	NotifySearchWord(MyString& text, const int index);
+	void	NotifySearchToBegin();
 
 private:
 	std::vector<Observer*> observers_;
