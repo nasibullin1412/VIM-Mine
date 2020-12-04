@@ -631,7 +631,7 @@ bool ConsoleView::IsSpecKeyOnPanel(int& x, int sym, MyString& command_)
 			--x;
 			if (!command_.Empty())
 			{
-				command_.Erase(x - pan::read_begin - 1, 1);
+				command_.Erase(x - pan::read_begin, 1);
 			}
 		}
 		return true;
