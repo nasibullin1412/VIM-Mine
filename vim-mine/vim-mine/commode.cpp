@@ -5,6 +5,9 @@ ComMode::ComMode()
 {
 	this->type_ = ComAction::INIT_VALUE;
 	this->open_ = false;
+	this->file_;
+	this->new_file_;
+	this->is_first_ = true;
 }
 
 ComMode::~ComMode()
@@ -22,13 +25,23 @@ bool ComMode::HandleAction(MyString& command)
 		return true;
 	}
 	size_t i = 0;
-	for (i; i < commode::number_of_check; i++)
+	size_t length = this->command_.Length();
+	for (size_t j = 0; j <= length; j++)
 	{
-		if (this->command_.Find(commode::check_commands[i].CStr()) != commode::not_found)
+		MyString sub_command = this->command_.Substr(0, j);
+		for (i = 0; i < commode::number_of_check; i++)
+		{
+			if (sub_command.Find(commode::check_commands[i].CStr()) != commode::not_found)
+			{
+				break;
+			}
+		}
+		if (i != commode::number_of_check)
 		{
 			break;
 		}
 	}
+
 	++i;
 	switch (i)
 	{
@@ -45,30 +58,40 @@ bool ComMode::HandleAction(MyString& command)
 	}
 	case 3:
 	{
-		this->type_ = ComAction::SAVE_CUR_FILE;
+		size_t length = command_.Length();
+		if (command[length - 1] == 'w')
+		{
+			this->type_ = ComAction::SAVE_CUR_FILE;
+			return true;
+		}
+		if (command.Find(commode::check_commands[commode::qw_nunber].CStr()) != commode::not_found)
+		{
+			this->type_ = ComAction::SAVE_FILE_EXIT;
+			return true;
+		}
+		this->type_ = ComAction::SAVE_TO_FILE;
 		return true;
 	}
 	case 4:
 	{
-		this->type_ = ComAction::SAVE_TO_FILE;
-		return true;
+		if (!*this->is_change_)
+		{
+			this->type_ = ComAction::EXIT;
+			return true;
+		}
+		if (length > 1 && this->command_[length - 2] == 'q' && this->command_[length - 1] == '!')
+		{
+			this->type_ = ComAction::EXIT;
+			return true;
+		}
+		break;
 	}
 	case 5:
-	{
-		this->type_ = ComAction::EXIT;
-		return true;
-	}
-	case 6:
 	{
 		this->type_ = ComAction::EXIT_WITHOUT_SAVE;
 		return true;
 	}
-	case 7:
-	{
-		this->type_ = ComAction::NUMBER;
-		return true;
-	}
-	case 8:
+	case 6:
 	{
 		this->type_ = ComAction::HELP;
 		return true;
@@ -76,44 +99,69 @@ bool ComMode::HandleAction(MyString& command)
 	default:
 		break;
 	}
+	int idx = 0;
+	if (this->is_first_)
+	{
+		idx = 1;
+		this->is_first_ = false;
+	}
+	MyString number = command.Substr(idx);
+	if (this->IsNumber(number))
+	{
+		this->type_ = ComAction::NUMBER;
+		return true;
+	}
+	command.Clear();
 	return false;
 }
 
 ModeType ComMode::DoAction(int index)
 {
+	this->is_first_ = false;
 	switch (this->type_)
 	{
 	case ComAction::OPEN_FILE:
 	{
-		this->OPenFile();
+		this->ReadFile();
 		break;
 	}
 	case ComAction::SAVE_FILE_EXIT:
 	{
+		if (this->SaveToFile())
+		{
+			return ModeType::EXIT;
+		}
 		break;
 	}
 	case ComAction::SAVE_CUR_FILE:
 	{
+		this->SaveToFile();
 		break;
 	}
 	case ComAction::SAVE_TO_FILE:
 	{
+		this->SaveToOtherFile();
 		break;
 	}
-	case ComAction::EXIT_WITHOUT_SAVE:
+	case ComAction::EXIT:
 	{
-		break;
+		return ModeType::EXIT;
 	}
+
 	case ComAction::NUMBER:
 	{
-		break;
+		this->GoToNumberString();
+		this->is_first_ = true;
+		return ModeType::EDIT_MODE;
 	}
 	case ComAction::HELP:
 	{
+		this->HelpInfo();
 		break;
 	}
 	case ComAction::EXIT_FROM_THIS_MODE:
 	{
+		this->is_first_ = true;
 		return ModeType::EDIT_MODE;
 	}
 	default:
@@ -122,9 +170,49 @@ ModeType ComMode::DoAction(int index)
 	return ModeType::ENTER_COM_MODE;
 }
 
+
+
+
+
+
+bool ComMode::SaveToOtherFile()
+{
+	if (!this->ParseFile('w'))
+	{
+		return false;
+	}
+	if (!this->SaveToFile())
+	{
+		this->file_ = this->new_file_;
+		return false;
+	}
+	this->NotifyChangeCurFileName(this->file_);
+	return true;
+}
+
+bool ComMode::SaveToFile()
+{
+	if (this->file_.Empty())
+	{
+		return false;
+	}
+	std::ofstream fout;
+	fout.open(this->file_.CStr());
+	if (!fout.is_open())
+	{
+		return false;
+	}
+	fout.write(this->text_->CStr(), this->text_->Length());
+	fout.close();
+	return true;
+}
+
+
+
 bool ComMode::ParseFile(char special_symbol)
 {
 	size_t length = this->command_.Length();
+	this->new_file_ = this->file_;
 	if (this->command_[length - 1] == special_symbol)
 	{
 		return false;
@@ -141,8 +229,9 @@ bool ComMode::ParseFile(char special_symbol)
 	return true;
 }
 
-bool ComMode::OPenFile()
+bool ComMode::ReadFile()
 {
+	*this->is_change_ = false;
 	if (!this->ParseFile('o'))
 	{
 		return false;
@@ -151,6 +240,7 @@ bool ComMode::OPenFile()
 	fin.open(this->file_.CStr());
 	if (!fin.is_open())
 	{
+		this->file_ = this->new_file_;
 		return false;
 	}
 	if (!this->text_->Empty())
@@ -166,3 +256,11 @@ bool ComMode::OPenFile()
 	this->NotifyOpenFile(*this->text_, this->file_);
 	return true;
 }
+
+void ComMode::HelpInfo()
+{
+	MyString help = commode::help_string;
+	this->NotifyHelpInfo(help, *this->text_);
+}
+
+

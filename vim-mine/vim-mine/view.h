@@ -46,6 +46,9 @@ public:
     virtual void	SetToEndString(MyString& text);
     virtual void	DeleteStringPrep(MyString& text, const int index);
     virtual void	ChangeOneSymbol();
+    virtual void	ChangeCurFileName(MyString& file_name);
+    virtual void	SetCurYByIndex(MyString& text, const int index);
+    virtual void	HelpInfo(MyString& help_info, MyString& text);
 
 private:
     AdapterPDCur*                   tui_object;
@@ -87,6 +90,7 @@ private:
     bool                            IsSpecKeyOnPanel(int& x, int sym, MyString& command_);
     void                            CountAndCreateLines(MyString& text);
     void                            ReturnToCurLine();
+    void                            PrintHelpString(MyString& help_info);
 };
 
 

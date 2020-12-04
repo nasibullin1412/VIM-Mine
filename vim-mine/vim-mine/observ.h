@@ -9,7 +9,8 @@ enum class ModeType : size_t
 	EDIT_MODE,
 	ENTER_SYM_MODE,
 	ENTER_COM_MODE,
-	SEARCH_MODE
+	SEARCH_MODE,
+	EXIT
 };
 
 enum class SpecialKeys
@@ -41,7 +42,9 @@ public:
 	virtual void	SetToEndString(MyString& text) = 0;
 	virtual void	DeleteStringPrep(MyString& text, const int index) = 0;
 	virtual void	ChangeOneSymbol() = 0;
-
+	virtual void	ChangeCurFileName(MyString& file_name) = 0;
+	virtual void	SetCurYByIndex(MyString& text, const int index) = 0;
+	virtual void	HelpInfo(MyString& help_info, MyString& text) = 0;
 };
 
 class Observable
@@ -62,6 +65,9 @@ public:
 	void	NotifySetToEndString(MyString& text);
 	void	NotifyDeleteStringPrep(MyString& text, const int index);
 	void	NotifyChangeOneSymbol();
+	void	NotifyChangeCurFileName(MyString& file_name);
+	void    NotifySetCurYByIndex(MyString& text, const int index);
+	void	NotifyHelpInfo(MyString& help_info, MyString& text);
 
 private:
 	std::vector<Observer*> observers_;

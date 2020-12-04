@@ -19,18 +19,20 @@ int main()
 	ConsoleView view_;
 	bool r_mode_insert = false;
 	char new_symbol = 0;
+	bool change = false;
+
 	EditMode obj;
 	obj.AddObserver(&view_);
-	obj.InitAllPointers(&text_, &r_mode_insert, &index, &new_symbol);
+	obj.InitAllPointers(&text_, &r_mode_insert, &index, &new_symbol, &change);
 	
 
 	EnterSymbolMode obj_last;
 	obj_last.AddObserver(&view_);
-	obj_last.InitAllPointers(&text_, &r_mode_insert, &index, &new_symbol);
+	obj_last.InitAllPointers(&text_, &r_mode_insert, &index, &new_symbol, &change);
 
 	ComMode commode_obj;
 	commode_obj.AddObserver(&view_);
-	commode_obj.InitAllPointers(&text_, &r_mode_insert, &index, &new_symbol);
+	commode_obj.InitAllPointers(&text_, &r_mode_insert, &index, &new_symbol, &change);
 
 	list_.emplace_back(&obj);
 	list_.emplace_back(&obj_last);

@@ -90,6 +90,7 @@ ModeType EnterSymbolMode::DoAction(int index)
 
 void EnterSymbolMode::NewString()
 {
+    *this->is_change_ = true;
     this->text_->Insert(*this->index, "\n");
     this->NotifyNewString(*this->text_);
     this->NotifyDoRefreash();

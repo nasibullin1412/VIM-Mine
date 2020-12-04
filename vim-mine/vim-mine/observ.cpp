@@ -78,3 +78,19 @@ void Observable::NotifyChangeOneSymbol()
     this->observers_[0]->ChangeOneSymbol();
 }
 
+void Observable::NotifyChangeCurFileName(MyString& file_name)
+{
+    this->observers_[0]->ChangeCurFileName(file_name);
+}
+
+void Observable::NotifySetCurYByIndex(MyString& text, const int index)
+{
+    this->observers_[0]->SetCurYByIndex(text, index);
+}
+
+void Observable::NotifyHelpInfo(MyString& help_info, MyString& text)
+{
+    this->observers_[0]->HelpInfo(help_info, text);
+}
+
+

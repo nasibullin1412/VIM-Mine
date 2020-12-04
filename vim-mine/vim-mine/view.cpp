@@ -46,7 +46,7 @@ void ConsoleView::BeginExecute()
 	ModeType type = ModeType::EDIT_MODE;
 	MyString command;
 	char symbol = 0;
-	while (true)
+	while (type != ModeType::EXIT)
 	{
 		command = this->UpdatePanel(type);
 		this->tui_object->PRefresh();
@@ -377,16 +377,18 @@ bool ConsoleView::UpCursor(bool to_begin_string, int& y, int& x)
 
 bool ConsoleView::DownCursor(bool to_begin_string, int& y, int& x)
 {
+	bool flag = false;
 	if (y - tui_object->GetOffsetY() == winparam::height - 1)
 	{
 		tui_object->ChangeOffsetY(1);
+		flag = true;
 	}
 	++y;
 	if (to_begin_string)
 	{
 		x = 0;
 	}
-	return false;
+	return flag;
 }
 
 std::vector<int> ConsoleView::CreateNewLine()
@@ -564,6 +566,13 @@ void ConsoleView::DeleteLine()
 		if (this->p_symbol_map_->operator[](this->p_cur_position_->y - 1)[1] == winparam::weight+1)
 		{
 			return;
+		}
+		if (this->p_cur_position_->y < this->p_symbol_map_->size()-1)
+		{
+			if (this->p_symbol_map_->operator[](this->p_cur_position_->y + 1)[1] + this->p_symbol_map_->operator[](this->p_cur_position_->y)[1] >= winparam::weight)
+			{
+				return;
+			}
 		}
 	}
 	std::vector<std::vector<int>>::iterator it;
@@ -753,8 +762,14 @@ void ConsoleView::NewString(MyString& text)
 		it += this->p_cur_position_->y+1;
 		std::vector<int> new_line = this->CreateNewLine();
 		this->p_symbol_map_->insert(it, new_line);
+		this->old_offset_ = this->tui_object->GetOffsetY();
 		this->PrintScreen(text, true, 0);
 		this->DownCursor(true, this->p_cur_position_->y, this->p_cur_position_->x);
+		if (this->p_last_position_->y > winparam::height)
+		{
+			this->old_offset_++;
+		}
+		
 	}
 	else
 	{
@@ -762,8 +777,11 @@ void ConsoleView::NewString(MyString& text)
 		this->p_symbol_map_->operator[](y)[0] = text.Length();
 		this->p_symbol_map_->operator[](y)[1] += 0;
 	}
+
 	this->ReturnToCurLine();
+
 	this->tui_object->WMove(this->p_cur_position_->y, this->p_cur_position_->x);
+	this->tui_object->PRefresh();
 }
 
 void ConsoleView::EnterSymbol(MyString& text)
@@ -833,6 +851,7 @@ void ConsoleView::ReturnToCurLine()
 	this->tui_object->ChangeOffsetY(old_offset_ - y);
 	this->tui_object->PRefresh();
 }
+
 
 
 void ConsoleView::OpneFile(MyString& text, MyString& file_name)
@@ -912,5 +931,87 @@ void ConsoleView::DeleteStringPrep(MyString& text, const int index)
 void ConsoleView::ChangeOneSymbol()
 {
 	this->after_key_ = true;
+}
+
+void ConsoleView::ChangeCurFileName(MyString& file_name)
+{
+	this->file_name_ = file_name;
+}
+
+void ConsoleView::SetCurYByIndex(MyString& text, const int index)
+{
+	int y = this->p_cur_position_->y;
+	int length = static_cast<int>(text.Length());
+	bool to_begin = false;
+	int end_line_index = this->p_symbol_map_->operator[](y)[0] + this->p_symbol_map_->operator[](y)[1];
+	if (this->p_symbol_map_->operator[](y)[0] > index) // определеям выше или ниже
+	{
+		--y;
+		while (y != 0 && this->p_symbol_map_->operator[](y)[0] > index)
+		{
+			--y;
+			this->KeyUp();
+			this->tui_object->PRefresh();
+		}
+	}
+	else
+	{
+		while (y != this->p_last_position_->y && index >= end_line_index)
+		{
+			++y;
+			this->KeyDown();
+			end_line_index = this->p_symbol_map_->operator[](y)[0] + this->p_symbol_map_->operator[](y)[1];
+		}
+	}
+	this->KeyUp();
+	this->p_cur_position_->y = y;
+}
+
+
+
+void ConsoleView::PrintHelpString(MyString& help_info)
+{
+	size_t length = help_info.Length();
+	int x = 0;
+	int y = 0;
+	for (size_t i = 0; i < length; i++)
+	{
+		if (help_info[i] == '\n')
+		{
+			this->DownCursor(true, y, x);
+		}
+		else
+		{
+			this->tui_object->MvwPrintw(y, x, help_info[i]);
+			++x;
+		}
+	}
+}
+
+
+void ConsoleView::HelpInfo(MyString& help_info, MyString& text)
+{
+	int temp_y = this->p_cur_position_->y;
+	int temp_x = this->p_cur_position_->x;
+	this->old_offset_ = this->tui_object->GetOffsetY();
+	this->p_cur_position_->x = 0;
+	this->p_cur_position_->y = 0;
+	this->tui_object->WMove(this->p_cur_position_->y, this->p_cur_position_->x);
+	this->tui_object->ClrToBot();
+	this->PrintHelpString(help_info);
+	this->tui_object->PRefresh();
+	int key = 0;
+	while (key != keys::key_escape)
+	{
+		this->tui_object->Echo();
+		key = this->tui_object->GetCh();
+		this->tui_object->NoEcho();
+	}
+	this->PrintScreen(text, false, 0);
+	this->p_cur_position_->y = temp_y;
+	this->p_cur_position_->x = temp_x;
+	this->ReturnToCurLine();
+	this->tui_object->WMove(temp_y, temp_x);
+	this->tui_object->PRefresh();
 }
 
