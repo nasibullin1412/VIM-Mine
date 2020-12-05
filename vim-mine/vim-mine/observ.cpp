@@ -5,6 +5,7 @@
 
 Observable::~Observable()
 {
+    this->observers_.clear();
 }
 
 void  Observable::AddObserver(Observer* observer)
@@ -116,5 +117,10 @@ void Observable::NotifySetCursRight()
 void Observable::NotifySetCursLeft()
 {
     this->observers_[0]->SetCursLeft();
+}
+
+void Observable::NotifyPastPreparation(MyString& text, const int index)
+{
+    this->observers_[0]->PastPreparation(text, index);
 }
 

@@ -15,6 +15,7 @@ Controller::Controller(std::vector<MainMode*>* model)
 
 Controller::~Controller()
 {
+	this->command_.~MyString();
 }
 
 ModeType Controller::InfoController(const int index, MyString& command)
@@ -34,6 +35,14 @@ void Controller::ChangeType(const ModeType& new_mode)
 {
 	if (this->mode_type_ == new_mode)
 	{
+		if (this->mode_type_ == ModeType::EDIT_MODE)
+		{
+			size_t length = command_.Length();
+			if (this->command_[length-1] == 'y')
+			{
+				return;
+			}
+		}
 		this->command_.~MyString();
 		return;
 	}

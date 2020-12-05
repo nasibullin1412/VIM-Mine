@@ -11,7 +11,12 @@ AdapterPDCur::AdapterPDCur()
 
 AdapterPDCur::~AdapterPDCur()
 {
-
+	this->DeleteWin();
+	this->screen_ = nullptr;
+	this->pad_ = nullptr;
+	this->pannel_ = nullptr;
+	this->offset_x_ = 0;
+	this->offset_y_ = 0;
 }
 
 int AdapterPDCur::WMove(const int y, const int x)
@@ -96,7 +101,16 @@ int AdapterPDCur::PRefresh()
 
 int AdapterPDCur::DeleteWin()
 {
-	return delwin(this->pad_);
+	wmove(this->pannel_, 0, 0);
+	wmove(this->pad_, 0, 0);
+	wclrtobot(this->pad_);
+	wclrtobot(this->pannel_);
+	this->PRefresh();
+	this->WRefresh();
+	delwin(this->pad_);
+	delwin(this->pannel_);
+	delwin(this->screen_);
+	return 0;
 }
 
 

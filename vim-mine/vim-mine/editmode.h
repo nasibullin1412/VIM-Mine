@@ -33,8 +33,8 @@ enum class ActionType
 namespace editm
 {
 	constexpr size_t number_of_check = 23;
-	const std::array < MyString, number_of_check>check_commands = { "^", "$", "diw", "b", "G", "x", "w",
-	"dd", "y", "yw", "p", "i", "I", "A", "S", "r", ":", "/", "?"};
+	const std::array < MyString, number_of_check>check_commands = { "^", "$", "diw", "b", "G", "x", "yw",
+	"dd", "y", "w", "p", "i", "I", "A", "S", "r", ":", "/", "?"};
 	
 	constexpr int not_found = -1;
 }
@@ -48,14 +48,23 @@ public:
 
 private:
 	ActionType type_;
+	MyString   copy_string_;
 
 	void	InsertFromBeginString();
 	void	InsertFromEndString();
 	void	DeleteStringAndStartInsert();
 	void	SetToRightWord();
-	void	SetToWord();
+	void	SetToLeftWord();
 	void	DeleteSymbolAfterCurs();
 	void	DeleteWord();
+	void	CopyString();
+	bool	ComeToBeginString();
+	int		CountLengthString();
+	void	CutCurString();
+	void	CopyCurWord();
+	int 	CountWordLength();
+	void	PasteAfterCursor();
+
 };
 
 #endif

@@ -55,6 +55,7 @@ public:
     virtual void	SetCursToWord(MyString& text, const int index);
     virtual void	SetCursRight();
     virtual void	SetCursLeft();
+    virtual void    PastPreparation(MyString& text, const int index);
 
 private:
     AdapterPDCur*                   tui_object;
@@ -100,6 +101,11 @@ private:
     void                            CountAndCreateLines(MyString& text);
     void                            ReturnToCurLine();
     void                            PrintHelpString(MyString& help_info);
+    bool                            IsOverflow(char symbol);
+    void                            PrinrWithoutEndlSym(int& y, int& x, char symbol, const int idx);
+    void                            PrintEndlSymbolNotXZero(int &y, int& x, char symbol, const int idx);
+    void                            PrintEndlAfterNewString(int& y, int& x, MyString& text, const int idx);
+    void                            PrintEndlAfterEnterSymbol(int& y, int& x, MyString& text, const int idx);
 };
 
 

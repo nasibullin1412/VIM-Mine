@@ -12,6 +12,7 @@ ComMode::ComMode()
 
 ComMode::~ComMode()
 {
+	this->new_file_.~MyString();
 }
 
 bool ComMode::HandleAction(MyString& command)

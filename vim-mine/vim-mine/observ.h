@@ -50,6 +50,7 @@ public:
 	virtual void	SetCursToWord(MyString& text, const int index) = 0;
 	virtual void	SetCursRight() = 0;
 	virtual void	SetCursLeft() = 0;
+	virtual void    PastPreparation(MyString& copy_line, const int index) = 0;
 };
 
 class Observable
@@ -78,6 +79,7 @@ public:
 	void	NotifySetToWord(MyString& text, const int index);
 	void	NotifySetCursRight();
 	void	NotifySetCursLeft();
+	void    NotifyPastPreparation(MyString& copy_line, const int index);
 
 private:
 	std::vector<Observer*> observers_;

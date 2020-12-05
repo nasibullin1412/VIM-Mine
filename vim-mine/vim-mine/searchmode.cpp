@@ -11,6 +11,8 @@ SearchMode::SearchMode():MainMode()
 
 SearchMode::~SearchMode()
 {
+	this->search_word_.~MyString();
+	this->founded_indexes_.clear();
 }
 
 bool SearchMode::HandleAction(MyString& command)

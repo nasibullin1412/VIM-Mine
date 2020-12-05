@@ -12,6 +12,7 @@ EnterSymbolMode::EnterSymbolMode()
 
 EnterSymbolMode::~EnterSymbolMode()
 {
+   
 }
 
 bool EnterSymbolMode::HandleAction(MyString& command)

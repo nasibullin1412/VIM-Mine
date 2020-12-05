@@ -4,10 +4,12 @@ EditMode::EditMode()
 	: MainMode()
 {
 	this->type_ = ActionType::INIT_VALUE;
+	this->copy_string_;
 }
 
 EditMode::~EditMode()
 {
+	this->copy_string_.~MyString();
 }
 
 bool EditMode::HandleAction(MyString& command)
@@ -39,7 +41,7 @@ bool EditMode::HandleAction(MyString& command)
 	case 5:
 	{
 		this->type_ = ActionType::MOVE_CURSOR_TO_NSTRING;
-		size_t length = command.Length() -1;
+		length = command.Length() -1;
 		size_t idx = 1;
 		MyString number = command.Substr(length - idx, idx);
 		while (this->IsNumber(number))
@@ -53,16 +55,23 @@ bool EditMode::HandleAction(MyString& command)
 		this->type_ = ActionType::DELETE_SYMBOL_AFTER_CURSOR;
 		return true;
 	case 7:
-		this->type_ = ActionType::MOVE_CURSOR_RIGHT_WORD_END;
+		this->type_ = ActionType::COPY_CUR_WORD;
 		return true;
 	case 8:
 		this->type_ = ActionType::CUT_CUR_STRING;
 		return true;
 	case 9:
+	{
+		if (command[length] != 'y')
+		{
+			command.Clear();
+			return false;
+		}
 		this->type_ = ActionType::COPY_CUR_STRING;
 		return true;
+	}
 	case 10:
-		this->type_ = ActionType::COPY_CUR_WORD;
+		this->type_ = ActionType::MOVE_CURSOR_RIGHT_WORD_END;
 		return true;
 	case 11:
 		this->type_ = ActionType::PASTE_AFTER_CURSOR;
@@ -174,7 +183,8 @@ ModeType EditMode::DoAction(int index)
 	}
 	case ActionType::MOVE_CURSOR_LEFT_BEGIN:
 	{
-		this->SetToWord();
+		this->SetToLeftWord();
+		this->NotifySetToWord(*this->text_, *this->index);
 		break;
 	}
 	case ActionType::MOVE_CURSOR_TO_NSTRING:
@@ -190,6 +200,26 @@ ModeType EditMode::DoAction(int index)
 	case ActionType::DELETE_WORD:
 	{
 		this->DeleteWord();
+		break;
+	}
+	case ActionType::COPY_CUR_STRING:
+	{
+		this->CopyString();
+		break;
+	}
+	case ActionType::CUT_CUR_STRING:
+	{
+		this->CutCurString();
+		break;
+	}
+	case ActionType::COPY_CUR_WORD:
+	{
+		this->CopyCurWord();
+		break;
+	}
+	case ActionType::PASTE_AFTER_CURSOR:
+	{
+		this->PasteAfterCursor();
 		break;
 	}
 	default:
@@ -249,7 +279,7 @@ void EditMode::SetToRightWord()
 	this->NotifySetToWord(*this->text_, *this->index);
 }
 
-void EditMode::SetToWord()
+void EditMode::SetToLeftWord()
 {
 	while (*this->index > 0 && (this->text_->operator[](*this->index - 1) == '\n' || this->text_->operator[](*this->index - 1) == ' '))
 	{
@@ -267,7 +297,7 @@ void EditMode::SetToWord()
 	{
 		*this->index += 1;
 	}
-	this->NotifySetToWord(*this->text_, *this->index);
+	
 }
 
 void EditMode::DeleteSymbolAfterCurs()
@@ -330,5 +360,100 @@ void EditMode::DeleteWord()
 		}
 	}
 	
+}
+
+void EditMode::CopyString()
+{
+	if (!this->ComeToBeginString())
+	{
+		return;
+	}
+	int length = this->CountLengthString();
+	if (length + *this->index == this->text_->Length())
+	{
+		this->copy_string_ = this->text_->Substr(*this->index, length);
+		this->copy_string_.AppEnd(1, '\n');
+		return;
+	}
+	this->copy_string_ = this->text_->Substr(*this->index, length + 1);
+}
+
+bool EditMode::ComeToBeginString()
+{
+	while (*this->index > 0 && this->text_->operator[](*this->index - 1) != '\n')
+	{
+		*this->index -= 1;
+	}
+	if (this->text_->operator[](*this->index) == '\n')
+	{
+		return false;
+	}
+	return true;
+}
+
+int EditMode::CountLengthString()
+{
+	int size = static_cast<int>(this->text_->Length());
+	int idx = *this->index;
+	int length = 0;
+	while (idx+length < size && this->text_->operator[](idx+length) != '\n')
+	{
+		 ++length;
+	}
+	return length;
+}
+
+void EditMode::CutCurString()
+{
+	this->CopyString();
+	this->DeleteStringAndStartInsert();
+	this->NotifySetCursRight();
+	this->DeleteSymbol();
+}
+
+void EditMode::CopyCurWord()
+{
+	if (this->text_->operator[](*this->index) == '\n' || this->text_->operator[](*this->index) == ' ')
+	{
+		return;
+	}
+	this->SetToLeftWord();
+	int length = this->CountWordLength();
+	this->copy_string_ = this->text_->Substr(*this->index, length);
+}
+
+int EditMode::CountWordLength()
+{
+	int size = static_cast<int>(this->text_->Length());
+	int idx = *this->index;
+	int length = 0;
+	while (idx + length < size && this->text_->operator[](idx + length) != '\n' && this->text_->operator[](idx + length) != ' ')
+	{
+		++length;
+	}
+	return length;
+}
+
+void EditMode::PasteAfterCursor()
+{
+	if (this->copy_string_.Empty())
+	{
+		return;
+	}
+	int length = static_cast<int>(this->text_->Length());
+	if (*this->index != length)
+	{
+		*this->index += 1;
+		this->NotifyPastPreparation(this->copy_string_, *this->index);
+		int length_copy = this->copy_string_.Length();
+		for (size_t i = 0; i < length_copy; i++)
+		{
+			*this->new_symbol_ = this->copy_string_[i];
+			this->EnterSymbol();
+			*this->index += 1;
+		}
+		this->NotifySetToBeginString(*this->text_);
+	}
+
 }
 
