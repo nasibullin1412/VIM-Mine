@@ -41,6 +41,10 @@ void MainMode::DeleteSymbol()
 
 void MainMode::GoToNumberString()
 {
+    if (this->number_string_ == 0)
+    {
+        return;
+    }
     size_t index = 0;
     size_t length = this->text_->Length();
     int count_strings = 0;
@@ -69,7 +73,7 @@ bool MainMode::IsNumber(MyString& number)
 {
     size_t length = number.Length();
     size_t i = 0;
-    if (length > symconst::max_length_number)
+    if (length > symconst::max_length_number || number.Empty())
     {
         return false;
     }

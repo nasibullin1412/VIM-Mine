@@ -12,9 +12,7 @@ enum class ActionType
 	MOVE_CURSOR_BEGIN_STRING,
 	MOVE_CURSOR_END_STRING,
 	MOVE_CURSOR_RIGHT_WORD_END,
-	MOVE_CURSOR__LEFT_BEGIN,
-	MOVE_CURSOR_BEGIN,
-	MOVE_CURSOR_END,
+	MOVE_CURSOR_LEFT_BEGIN,
 	MOVE_CURSOR_TO_NSTRING,
 	DELETE_SYMBOL_AFTER_CURSOR,
 	DELETE_WORD,
@@ -35,7 +33,7 @@ enum class ActionType
 namespace editm
 {
 	constexpr size_t number_of_check = 23;
-	const std::array < MyString, number_of_check>check_commands = { "^", "$", "w", "b", "gg", "G", "NG", "x", "diw",
+	const std::array < MyString, number_of_check>check_commands = { "^", "$", "diw", "b", "G", "x", "w",
 	"dd", "y", "yw", "p", "i", "I", "A", "S", "r", ":", "/", "?"};
 	
 	constexpr int not_found = -1;
@@ -54,6 +52,10 @@ private:
 	void	InsertFromBeginString();
 	void	InsertFromEndString();
 	void	DeleteStringAndStartInsert();
+	void	SetToRightWord();
+	void	SetToWord();
+	void	DeleteSymbolAfterCurs();
+	void	DeleteWord();
 };
 
 #endif

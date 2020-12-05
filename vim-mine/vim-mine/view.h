@@ -52,6 +52,9 @@ public:
     virtual void	HelpInfo(MyString& help_info, MyString& text);
     virtual void	SearchWord(MyString& text, const int index);
     virtual void	SearchToBegin();
+    virtual void	SetCursToWord(MyString& text, const int index);
+    virtual void	SetCursRight();
+    virtual void	SetCursLeft();
 
 private:
     AdapterPDCur*                   tui_object;
@@ -67,6 +70,7 @@ private:
     bool                            special_key_;
     bool                            is_search;
     bool                            search_to_begin_;
+    bool                            is_enter_symbol;
 
     MyString                        UpdatePanel(ModeType& type);
     MyString                        GetMyString();

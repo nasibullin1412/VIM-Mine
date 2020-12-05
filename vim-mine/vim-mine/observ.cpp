@@ -103,3 +103,18 @@ void Observable::NotifySearchToBegin()
     this->observers_[0]->SearchToBegin();
 }
 
+void Observable::NotifySetToWord(MyString& text, const int index)
+{
+    this->observers_[0]->SetCursToWord(text, index);
+}
+
+void Observable::NotifySetCursRight()
+{
+    this->observers_[0]->SetCursRight();
+}
+
+void Observable::NotifySetCursLeft()
+{
+    this->observers_[0]->SetCursLeft();
+}
+

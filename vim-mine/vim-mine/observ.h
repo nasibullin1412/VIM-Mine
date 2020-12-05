@@ -47,6 +47,9 @@ public:
 	virtual void	HelpInfo(MyString& help_info, MyString& text) = 0;
 	virtual void	SearchWord(MyString& text, const int index) = 0;
 	virtual void	SearchToBegin() = 0;
+	virtual void	SetCursToWord(MyString& text, const int index) = 0;
+	virtual void	SetCursRight() = 0;
+	virtual void	SetCursLeft() = 0;
 };
 
 class Observable
@@ -72,6 +75,9 @@ public:
 	void	NotifyHelpInfo(MyString& help_info, MyString& text);
 	void	NotifySearchWord(MyString& text, const int index);
 	void	NotifySearchToBegin();
+	void	NotifySetToWord(MyString& text, const int index);
+	void	NotifySetCursRight();
+	void	NotifySetCursLeft();
 
 private:
 	std::vector<Observer*> observers_;

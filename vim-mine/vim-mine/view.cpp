@@ -17,6 +17,7 @@ ConsoleView::ConsoleView()
 	this->special_key_ = false;
 	this->is_search = false;
 	this->search_to_begin_ = false;
+	this->is_enter_symbol = false;
 }
 
 ConsoleView::~ConsoleView()
@@ -156,7 +157,7 @@ int ConsoleView::SetActualIndex(const char symbol)
 	}
 	else
 	{
-		if (this->p_symbol_map_->operator[](y)[1] == 1 && this->p_cur_position_->y != this->p_last_position_->y || after_key_)
+		if (this->p_symbol_map_->operator[](y)[1] == 1 && this->p_cur_position_->y != this->p_last_position_->y && !this->is_enter_symbol || after_key_)
 		{
 			this->index_ = this->p_symbol_map_->operator[](y)[0] + x; //когда строка выше переполнена и на текущей строке только \n или пришли на данную позицию с помощью клавы
 		}
@@ -166,6 +167,7 @@ int ConsoleView::SetActualIndex(const char symbol)
 		}
 			
 	}
+	this->is_enter_symbol = false;
 	return 0;
 }
 
@@ -470,7 +472,7 @@ void ConsoleView::PrintScreen(MyString& text, const bool new_string, int index)
 	this->tui_object->PRefresh();
 	for (size_t i = static_cast<size_t>(idx); i < length; i++)
 	{
-		if (y== 7)
+		if (y== 41)
 		{
 			y++;
 			--y;
@@ -517,7 +519,7 @@ void ConsoleView::PrintScreen(MyString& text, const bool new_string, int index)
 			}
 			else
 			{
-				if (i != 0 && this->p_symbol_map_->operator[](y-1)[1] == winparam::weight && text[i-1] != '\n')
+				if (i != 0 && this->p_symbol_map_->operator[](y-1)[1] == winparam::weight && text[i-1] != '\n')//когда из enter symbol и строка выше переполнена
 				{
 					this->p_symbol_map_->operator[](y - 1)[1] += 1;
 				}
@@ -526,6 +528,7 @@ void ConsoleView::PrintScreen(MyString& text, const bool new_string, int index)
 					this->p_symbol_map_->operator[](y)[1] = 1;
 					this->p_symbol_map_->operator[](y)[0] = i;
 					this->DownCursor(true, y, x);
+
 				}
 				this->tui_object->PRefresh();
 				
@@ -806,7 +809,7 @@ void ConsoleView::NewString(MyString& text)
 
 void ConsoleView::EnterSymbol(MyString& text)
 {
-	
+	this->is_enter_symbol = true;
 	this->ClearScreen();
 	this->DoRefreash();
 	this->CheckNewLine();
@@ -920,14 +923,10 @@ void ConsoleView::SetToEndString(MyString& text)
 		cur_index = this->p_symbol_map_->operator[](y)[0] + this->p_symbol_map_->operator[](y)[1];
 	}
 	this->p_cur_position_->y = y;
-	this->p_cur_position_->x = this->p_symbol_map_->operator[](y)[1] - 1;
+	this->p_cur_position_->x = this->p_symbol_map_->operator[](y)[1] - 2;
 	if (this->p_cur_position_->x < 0)
 	{
 		this->p_cur_position_->x = 0;
-	}
-	if (this->p_cur_position_->x >= winparam::weight)
-	{
-		this->NextCursorPos(this->p_cur_position_->y, this->p_cur_position_->x);
 	}
 	this->tui_object->WMove(this->p_cur_position_->y, this->p_cur_position_->x);
 	this->tui_object->PRefresh();
@@ -937,6 +936,13 @@ void ConsoleView::DeleteStringPrep(MyString& text, const int index)
 {
 	int y = this->p_cur_position_->y;
 	this->SetToEndString(text);
+	this->p_cur_position_->x = this->p_symbol_map_->operator[](y)[1] - 1;
+	if (this->p_cur_position_->x >= winparam::weight)
+	{
+		this->NextCursorPos(this->p_cur_position_->y, this->p_cur_position_->x);
+	}
+	this->tui_object->WMove(this->p_cur_position_->y, this->p_cur_position_->x);
+	this->tui_object->PRefresh();
 	if (this->p_cur_position_->x == 0 && y != this->p_cur_position_->y)
 	{
 		if (this->p_symbol_map_->operator[](y - 1)[1] == winparam::weight+1)
@@ -971,7 +977,7 @@ void ConsoleView::SetCurYByIndex(MyString& text, const int index)
 	if (this->p_symbol_map_->operator[](y)[0] > index) // определеям выше или ниже
 	{
 		--y;
-		while (y != 0 && this->p_symbol_map_->operator[](y)[0] > index)
+		while (y > 0 && this->p_symbol_map_->operator[](y)[0] > index)
 		{
 			--y;
 			this->KeyUp();
@@ -1043,6 +1049,7 @@ void ConsoleView::HelpInfo(MyString& help_info, MyString& text)
 
 void ConsoleView::SearchWord(MyString& text, const int index)
 {
+	this->after_key_ = true;
 	this->SetCurYByIndex(text, index);
 	this->p_cur_position_->x = index - this->p_symbol_map_->operator[](this->p_cur_position_->y)[0];
 	this->tui_object->WMove(this->p_cur_position_->y, this->p_cur_position_->x);
@@ -1053,5 +1060,31 @@ void ConsoleView::SearchToBegin()
 {
 	this->search_to_begin_ = true;
 	this->after_key_ = true;
+}
+
+void ConsoleView::SetCursToWord(MyString& text, const int index)
+{
+	this->after_key_ = true;
+	this->index_ = index;
+	this->SetCurYByIndex(text, index);
+	this->tui_object->WMove(this->p_cur_position_->y, this->p_cur_position_->x);
+	this->tui_object->PRefresh();
+	this->p_cur_position_->x = index - this->p_symbol_map_->operator[](this->p_cur_position_->y)[0];
+	if (this->p_cur_position_->x < 0)
+	{
+		this->p_cur_position_->x = 0;
+	}
+	this->tui_object->WMove(this->p_cur_position_->y, this->p_cur_position_->x);
+	this->tui_object->PRefresh();
+}
+
+void ConsoleView::SetCursRight()
+{
+	this->KeyRight();
+}
+
+void ConsoleView::SetCursLeft()
+{
+	this->KeyLeft();
 }
 
