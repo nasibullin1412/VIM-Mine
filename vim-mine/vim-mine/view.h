@@ -33,12 +33,7 @@ public:
 
 
  
-
-    virtual void    PrintScreen(MyString& text, const bool new_string, int index);
-    virtual void	ClearScreen();
     virtual void	DoRefreash();
-    virtual void    NextCur();
-    virtual void    PrevCur();
     virtual void	NewString(MyString& text);
     virtual void    EnterSymbol(MyString& text);
     virtual void	DeleteSymbol(MyString& text, bool delete_line, const int index);
@@ -73,6 +68,10 @@ private:
     bool                            search_to_begin_;
     bool                            is_enter_symbol;
 
+    void                            PrevCur();
+    void                            NextCur();
+    void	                        ClearScreen();
+    void                            PrintScreen(MyString& text, const bool new_string, int index);
     MyString                        UpdatePanel(ModeType& type);
     MyString                        GetMyString();
     void                            PrintMyString(const int x, const MyString& string_);

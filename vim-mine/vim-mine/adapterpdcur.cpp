@@ -42,22 +42,11 @@ int AdapterPDCur::MvwPrintw(int y, int x, char sym)
 	return 0;
 }
 
-int AdapterPDCur::Box(const chtype symbol_hieght, const chtype symbol_weight)
-{
-	return box(this->pad_, symbol_hieght, symbol_weight);
-}
 
-int AdapterPDCur::WBorder(const chtype left_side, const chtype right_side, const chtype top_side,
-	const chtype bottom_side, const chtype top_left_hand, const chtype top_right_hand, const chtype bottom_left, const chtype bottom_right)
-{
-	return wborder(this->pad_, left_side, right_side, top_side,
-		 bottom_side, top_left_hand, top_right_hand, bottom_left, bottom_right);
-}
 
-int AdapterPDCur::Raw()
-{
-	return raw();
-}
+
+
+
 
 int AdapterPDCur::GetYX(int &y, int &x)
 {

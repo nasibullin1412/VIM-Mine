@@ -57,10 +57,6 @@ public:
 	int			WPanMove(const int y, const int x);
 	int			EndWin();
 	int			MvwPrintw(int y, int x, char sym);
-	int			Box(const chtype symbol_hieght, const chtype symbol_weight);
-	int			WBorder(const chtype left_side, const chtype right_side, const chtype top_side, const chtype bottom_side,
-				const chtype top_left_hand, const chtype top_right_hand, const chtype bottom_left, const chtype bottom_right);
-	int			Raw();
 	int			GetYX(int &y, int &x);
 	int			GetMaxYX(int &y, int &x);
 	int			Keypad(const bool mode);
