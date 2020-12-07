@@ -259,13 +259,30 @@ bool ComMode::ReadFile()
 		}
 		symbol = fin.get();
 	}
+	fin.close();
 	this->NotifyOpenFile(*this->text_, this->file_);
 	return true;
 }
 
 void ComMode::HelpInfo()
 {
-	MyString help = commode::help_string;
+	MyString help;
+	std::ifstream fin_help;
+	fin_help.open(commode::help_file_name.CStr());
+	if (!fin_help.is_open())
+	{
+		return;
+	}
+	int symbol = fin_help.get();
+	while (!fin_help.eof())
+	{
+		if (symbol != '\r')
+		{
+			help.AppEnd(1, symbol);
+		}
+		symbol = fin_help.get();
+	}
+	fin_help.close();
 	this->NotifyHelpInfo(help, *this->text_);
 }
 

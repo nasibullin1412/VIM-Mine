@@ -477,7 +477,7 @@ void ConsoleView::PrevCursorPos(int& y, int& x)
 void ConsoleView::PrinrWithoutEndlSym(int& y, int& x, char symbol, const int idx)
 {
 	this->tui_object->MvwPrintw(y, x, symbol);
-	this->tui_object->PRefresh();
+	//this->tui_object->PRefresh();
 	if (x == 0)
 	{
 		this->p_symbol_map_->operator[](y)[0] = idx;
@@ -525,7 +525,7 @@ void ConsoleView::PrintEndlAfterEnterSymbol(int& y, int& x, MyString& text, cons
 		this->p_symbol_map_->operator[](y)[0] = idx;
 		this->DownCursor(true, y, x);
 	}
-	this->tui_object->PRefresh();
+	//this->tui_object->PRefresh();
 }
 
 
@@ -885,12 +885,18 @@ void ConsoleView::DeleteSymbol(MyString& text, bool delete_line, const int index
 	}
 	else
 	{
-		this->PrevCursorPos(this->p_cur_position_->y, this->p_cur_position_->x);
+		//this->PrevCursorPos(this->p_cur_position_->y, this->p_cur_position_->x);
+		this->KeyLeft();
 	}
 	this->tui_object->ClrToBot();
 	this->old_offset_ = this->tui_object->GetOffsetY();
 	this->PrintScreen(text, false, 0);
 	this->ReturnToCurLine();
+	if (this->p_cur_position_->x == 1)
+	{
+		this->after_beg_str_ = false;
+		this->after_beg_str_ = true;
+	}
 	this->tui_object->WMove(this->p_cur_position_->y, this->p_cur_position_->x);
 	this->tui_object->PRefresh();
 }
@@ -988,21 +994,21 @@ void ConsoleView::DeleteStringPrep(MyString& text, const int index)
 {
 	int y = this->p_cur_position_->y;
 	this->SetToEndString(text);
-	this->p_cur_position_->x = this->p_symbol_map_->operator[](y)[1] - 1;
-	if (this->p_cur_position_->x >= winparam::width)
+	this->p_cur_position_->x = this->p_symbol_map_->operator[](this->p_cur_position_->y)[1] - 1;
+	if (this->p_cur_position_->x >= winparam::width)// if last the position of overflow string
 	{
 		this->NextCursorPos(this->p_cur_position_->y, this->p_cur_position_->x);
 	}
-	this->tui_object->WMove(this->p_cur_position_->y, this->p_cur_position_->x);
-	this->tui_object->PRefresh();
-	if (this->p_cur_position_->x == 0 && y != this->p_cur_position_->y)
+	
+	/*if (this->p_cur_position_->x == 0 && y != this->p_cur_position_->y)
 	{
 		if (y!= 0 &&this->p_symbol_map_->operator[](y - 1)[1] == winparam::width +1)
 		{
 			this->p_cur_position_->y = y - 1;
 			this->p_cur_position_->x = winparam::width - 1;
 		}
-	}
+	}*/
+	this->tui_object->WMove(this->p_cur_position_->y, this->p_cur_position_->x);
 	this->index_ = index;
 }
 
@@ -1033,7 +1039,7 @@ void ConsoleView::SetCurYByIndex(MyString& text, const int index)
 		{
 			--y;
 			this->KeyUp();
-			this->tui_object->PRefresh();
+			//this->tui_object->PRefresh();
 		}
 	}
 	else
@@ -1077,9 +1083,11 @@ void ConsoleView::HelpInfo(MyString& help_info, MyString& text)
 	int temp_y = this->p_cur_position_->y;
 	int temp_x = this->p_cur_position_->x;
 	this->old_offset_ = this->tui_object->GetOffsetY();
+	this->tui_object->ChangeOffsetY(-this->old_offset_);
 	this->p_cur_position_->x = 0;
 	this->p_cur_position_->y = 0;
 	this->tui_object->WMove(this->p_cur_position_->y, this->p_cur_position_->x);
+	//this->tui_object->PRefresh();
 	this->tui_object->ClrToBot();
 	this->PrintHelpString(help_info);
 	this->tui_object->PRefresh();
@@ -1090,6 +1098,8 @@ void ConsoleView::HelpInfo(MyString& help_info, MyString& text)
 		key = this->tui_object->GetCh();
 		this->tui_object->NoEcho();
 	}
+	this->tui_object->WMove(this->p_cur_position_->y, this->p_cur_position_->x);
+	this->tui_object->ClrToBot();
 	this->PrintScreen(text, false, 0);
 	this->p_cur_position_->y = temp_y;
 	this->p_cur_position_->x = temp_x;

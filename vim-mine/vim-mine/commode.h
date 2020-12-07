@@ -9,7 +9,8 @@ namespace commode
 	constexpr size_t			qw_nunber = 5;
 	const std::array <MyString, number_of_check>check_commands = { "o", "x", "w", "q", "q!", "h"};
 	constexpr int				not_found = -1;
-	const MyString				help_string = "Here will be help information, developer is realy tired";
+	const MyString				help_file_name = "help.txt";
+
 }
 
 

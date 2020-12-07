@@ -254,7 +254,7 @@ void EditMode::DeleteStringAndStartInsert()
 		this->DeleteSymbol();
 		*this->index -=1;
 	}
-
+	this->NotifyDoRefreash();
 }
 
 void EditMode::SetToRightWord()

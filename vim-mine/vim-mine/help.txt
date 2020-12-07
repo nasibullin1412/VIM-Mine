@@ -1,0 +1,27 @@
+RIGHT/LEFT - Move the cursor to the right/left by 1 position.
+UP/DOWN - Move the cursor up/down 1 line in the console.
+0/$ - Move the cursor to the beginning/end of the console line.
+w/b - Move the cursor to the end/beggining of a word to the right of the cursor
+gg/G - Go to the beginning/end of the file.
+PG_UP/PG_DOWN - Go to the top/bottom of the screen.
+NG - Go to the console line with the number N.
+x - Delete a character after the cursor.
+c - Delete the word under the cursor, excluding the space on the right and \n.
+d/y - Cut/copy the current console line.
+v - Copy a word under the cursor.
+p - Insert after the cursor. 
+/text<CR>/?text<CR> - Search for the "text" string from the cursor to the end/beginnig of file. 
+n/N - Repeat search/ Repeat the search in the opposite direction.
+I - Enter text before the cursor.
+I/A - Go to the beginning/end of the console line and start typing.
+S - Delete the contents of the console line and start typing.
+r - Replace one character under the cursor.
+o filename - Open the file "filename".
+w/x - Write to the current file./Write to the current file and exit.
+w filename - Write to "filename".
+q - Exit. If the file was changed, you can only exit via q!
+q! - Exit without saving.
+wq! - Write to the current file and exit.
+number - Switching to the number console line.
+h - Display help for commands.
+
