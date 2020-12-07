@@ -4,11 +4,14 @@
 #include "entersymbolmode.h"
 #include "searchmode.h"
 #include "view.h"
-
+#define _WIN32_WINNT 0x0500
+#include <windows.h>
 
 int main()
 {
 	system("mode con cols=120 lines=30");
+	HWND consoleWindow = GetConsoleWindow();
+	SetWindowLong(consoleWindow, GWL_STYLE, GetWindowLong(consoleWindow, GWL_STYLE) & ~WS_MAXIMIZEBOX & ~WS_SIZEBOX);
 	MyString text_;
 	std::vector<MainMode*> list_;
 	Position last_position;
