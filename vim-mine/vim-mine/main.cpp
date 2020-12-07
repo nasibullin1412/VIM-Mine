@@ -8,6 +8,7 @@
 
 int main()
 {
+	system("mode con cols=120 lines=30");
 	MyString text_;
 	std::vector<MainMode*> list_;
 	Position last_position;

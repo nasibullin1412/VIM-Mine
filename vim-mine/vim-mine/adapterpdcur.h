@@ -34,7 +34,7 @@ namespace border_
 namespace winparam
 {
 	constexpr int height = 28;
-	constexpr int weight = 119;
+	constexpr int width = 119;
 	constexpr int r_postion = 119;
 	constexpr int n_postion = 120;
 	constexpr int real_size = 10000;

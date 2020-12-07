@@ -85,7 +85,7 @@ int AdapterPDCur::GetCh()
 
 int AdapterPDCur::PRefresh()
 {
-	return prefresh(this->pad_, this->offset_y_, 0, this->offset_x_, 0, winparam::height, winparam::weight);
+	return prefresh(this->pad_, this->offset_y_, 0, this->offset_x_, 0, winparam::height, winparam::width);
 }
 
 int AdapterPDCur::DeleteWin()

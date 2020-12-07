@@ -260,7 +260,7 @@ void EditMode::DeleteStringAndStartInsert()
 void EditMode::SetToRightWord()
 {
 	size_t length = this->text_->Length();
-	while (*this->index < length && (this->text_->operator[](*this->index+1) == '\n' || this->text_->operator[](*this->index+1) == ' '))
+	while (*this->index < static_cast<int>(length) && (this->text_->operator[](*this->index+1) == '\n' || this->text_->operator[](*this->index+1) == ' '))
 	{
 		*this->index += 1;
 	}
@@ -268,7 +268,7 @@ void EditMode::SetToRightWord()
 	{
 		*this->index += 1;
 	}
-	while (*this->index < length && this->text_->operator[](*this->index) != '\n' && this->text_->operator[](*this->index) != ' ')
+	while (*this->index < static_cast<int>(length) && this->text_->operator[](*this->index) != '\n' && this->text_->operator[](*this->index) != ' ')
 	{
 		*this->index += 1;
 	}
@@ -334,7 +334,7 @@ void EditMode::DeleteWord()
 	}
 	if (this->text_->operator[](*this->index) == ' ')
 	{
-		while (*this->index < length && this->text_->operator[](*this->index) == ' ')
+		while (*this->index < static_cast<int>(length) && this->text_->operator[](*this->index) == ' ')
 		{
 			*this->index += 1;
 			this->NotifySetCursRight();
@@ -347,7 +347,7 @@ void EditMode::DeleteWord()
 	}
 	else
 	{
-		while (*this->index < length && this->text_->operator[](*this->index) != ' ' && this->text_->operator[](*this->index) != '\n')
+		while (*this->index < static_cast<int>(length) && this->text_->operator[](*this->index) != ' ' && this->text_->operator[](*this->index) != '\n')
 		{
 			*this->index += 1;
 			this->NotifySetCursRight();
@@ -446,7 +446,7 @@ void EditMode::PasteAfterCursor()
 		*this->index += 1;
 		this->NotifyPastPreparation(this->copy_string_, *this->index);
 		int length_copy = this->copy_string_.Length();
-		for (size_t i = 0; i < length_copy; i++)
+		for (int i = 0; i < length_copy; i++)
 		{
 			*this->new_symbol_ = this->copy_string_[i];
 			this->EnterSymbol();

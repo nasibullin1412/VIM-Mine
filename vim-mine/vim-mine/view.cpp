@@ -37,15 +37,16 @@ void ConsoleView::InitAllPointers(AdapterPDCur* tui_object, std::vector<std::vec
 
 }
 
-
-
+/*
+The function with which the logical part of the program begins
+*/
 void ConsoleView::BeginExecute()
 {
 	this->tui_object->InitScr();
-	this->tui_object->NewPad(winparam::real_size, winparam::weight);
+	this->tui_object->NewPad(winparam::real_size, winparam::width);
 	this->tui_object->PRefresh();
 	this->tui_object->Keypad(true);
-	this->tui_object->NewWin(winparam::pannel_height, winparam::weight, winparam::pan_start_y, 0);
+	this->tui_object->NewWin(winparam::pannel_height, winparam::width, winparam::pan_start_y, 0);
 	ModeType type = ModeType::EDIT_MODE;
 	MyString command;
 	char symbol = 0;
@@ -61,6 +62,9 @@ void ConsoleView::BeginExecute()
 		if (!special_key_)
 		{
 			this->SetActualIndex(symbol);
+			/*
+			send data of user actions to controller
+			*/
 			type =  this->p_controller_->InfoController(this->index_, command);
 			if (type != ModeType::SEARCH_MODE)
 			{
@@ -152,23 +156,23 @@ bool ConsoleView::IsOverflow(char symbol)
 {
 	int y, x = 0;
 	this->tui_object->GetYX(y, x);
-	if (y==0)//на нулевой строке нет строки выше
+	if (y==0)//there is no line above on line zero
 	{
 		return false;
 	}
-	if (x!= 0)//курсор сам перемещается только при x = 0
+	if (x!= 0)// the cursor itself moves only when x = 0
 	{
 		return false;
 	}
-	if (symbol == '\n')//символ переноса строки
+	if (symbol == '\n')// line break character
 	{
 		return false;
 	}
-	if (this->p_symbol_map_->operator[](y)[1] == 0)//перносов строки нет, а значит символа \n выше быть не может
+	if (this->p_symbol_map_->operator[](y)[1] == 0)// there are no line transfers, which means that the \ n character cannot be higher
 	{
 		return false;
 	}
-	if (this->p_symbol_map_->operator[](y - 1)[1] != winparam::weight + 1)//если выше строка не переполнена
+	if (this->p_symbol_map_->operator[](y - 1)[1] != winparam::width + 1)// if the above line is not overflowed
 	{
 		return false;
 	}
@@ -176,7 +180,7 @@ bool ConsoleView::IsOverflow(char symbol)
 	{
 		return false;
 	}
-	if (this->p_symbol_map_->operator[](y)[1] == 1 && this->p_cur_position_->y != this->p_last_position_->y || after_key_)//переполнение может быть только если предыдущее изменение было в функции enter_symbol
+	if (this->p_symbol_map_->operator[](y)[1] == 1 && this->p_cur_position_->y != this->p_last_position_->y || after_key_)// overflow can only be if the previous change was in the enter_symbol function
 	{
 		return false;
 	}
@@ -193,7 +197,7 @@ int ConsoleView::SetActualIndex(const char symbol)
 	this->tui_object->GetYX(y, x);
 	if (this->IsOverflow(symbol))
 	{
-		this->index_ = this->p_symbol_map_->operator[](y - 1)[0] + this->p_symbol_map_->operator[](y - 1)[1] - 1;//когда происходит переполнение строки с \n на конце
+		this->index_ = this->p_symbol_map_->operator[](y - 1)[0] + this->p_symbol_map_->operator[](y - 1)[1] - 1;// when there is a line overflow with \ n at the end
 	}
 	else
 	{
@@ -412,7 +416,7 @@ bool ConsoleView::UpCursor(bool to_begin_string, int& y, int& x)
 		--y;
 		if (to_begin_string)
 		{
-			x = winparam::weight - 1;
+			x = winparam::width - 1;
 		}
 	}
 	return false;
@@ -438,7 +442,6 @@ std::vector<int> ConsoleView::CreateNewLine()
 {
 
 	std::vector<int>new_line(2, 0);
-	//new_line[0] = static_cast<int>(*this->p_index_);
 	return new_line;
 
 }
@@ -446,7 +449,7 @@ std::vector<int> ConsoleView::CreateNewLine()
 
 void ConsoleView::NextCursorPos(int& y, int& x)
 {
-	if (x >= winparam::weight - 1)
+	if (x >= winparam::width - 1)
 	{
 		this->DownCursor(true, y, x);
 	}
@@ -497,14 +500,14 @@ void ConsoleView::PrintEndlSymbolNotXZero(int& y, int& x, char symbol, const int
 
 void ConsoleView::PrintEndlAfterNewString(int& y, int& x, MyString& text, const int idx)
 {
-	if (idx != 0 && this->p_symbol_map_->operator[](y - 1)[1] == winparam::weight && text[idx - 1] != '\n')
+	if (idx != 0 && this->p_symbol_map_->operator[](y - 1)[1] == winparam::width && text[idx - 1] != '\n')
 	{
 		this->p_symbol_map_->operator[](y - 1)[1] += 1;
-		return;// в случае, когда полная строка с \n на конце и вбивается выше
+		return;// in the case when the full line with \ n at the end and is driven in above
 	}
 	if (idx != 0)
 	{
-		this->p_symbol_map_->operator[](y)[0] = this->p_symbol_map_->operator[](y - 1)[1] + this->p_symbol_map_->operator[](y - 1)[0]; // когда только \n в строке
+		this->p_symbol_map_->operator[](y)[0] = this->p_symbol_map_->operator[](y - 1)[1] + this->p_symbol_map_->operator[](y - 1)[0];// when only \ n is in the line
 	}
 	this->p_symbol_map_->operator[](y)[1] = 1;
 	this->DownCursor(true, y, x);
@@ -512,7 +515,7 @@ void ConsoleView::PrintEndlAfterNewString(int& y, int& x, MyString& text, const 
 
 void ConsoleView::PrintEndlAfterEnterSymbol(int& y, int& x, MyString& text, const int idx)
 {
-	if (idx != 0 && this->p_symbol_map_->operator[](y - 1)[1] >= winparam::weight && text[idx - 1] != '\n')//когда из enter symbol и строка выше переполнена
+	if (idx != 0 && this->p_symbol_map_->operator[](y - 1)[1] >= winparam::width && text[idx - 1] != '\n')//когда из enter symbol и строка выше переполнена
 	{
 		this->p_symbol_map_->operator[](y - 1)[1] += 1;
 	}
@@ -545,12 +548,12 @@ void ConsoleView::PrintScreen(MyString& text, const bool new_string, int index)
 	if (y != 0)
 	{
 		idx = this->p_symbol_map_->operator[](y - 1)[0] + this->p_symbol_map_->operator[](y - 1)[1];
-		if (!new_string && this->p_cur_position_->x == 0 && this->p_symbol_map_->operator[](y -1)[1] == winparam::weight + 1) //если из при вводе символа, начиная со позиции x = 0 b c перегруженной строкой выше 
+		if (!new_string && this->p_cur_position_->x == 0 && this->p_symbol_map_->operator[](y -1)[1] == winparam::width + 1) // if from the function of entering a character, starting from position x = 0 b c of the overloaded string above
 		{
-			if (text[idx + 1] != '\n')//если не с новой строки
+			if (text[idx + 1] != '\n')// if not on a new line
 			{
 				--idx;
-				--this->p_symbol_map_->operator[](y - 1)[1];//когда переполнение и добавление в эту же строку нового символа необходимо поменять 
+				--this->p_symbol_map_->operator[](y - 1)[1];// when overflow and adding a new character to the same string needs to be changed
 			}
 		}
 	}
@@ -558,7 +561,6 @@ void ConsoleView::PrintScreen(MyString& text, const bool new_string, int index)
 	{
 		idx = 0;
 	}
-	//this->tui_object->PRefresh();
 	for (size_t i = static_cast<size_t>(idx); i < length; i++)
 	{
 		if (text[i] != '\n')
@@ -600,7 +602,7 @@ void ConsoleView::ClearScreen()
 
 bool ConsoleView::CheckNewLine()
 {
-	if (this->p_cur_position_->x == winparam::weight - 1 || this->p_symbol_map_->operator[](this->p_cur_position_->y)[1] >= winparam::weight)
+	if (this->p_cur_position_->x == winparam::width - 1 || this->p_symbol_map_->operator[](this->p_cur_position_->y)[1] >= winparam::width)
 	{
 		std::vector<int> new_line = this->CreateNewLine();
 		this->p_symbol_map_->emplace_back(new_line);
@@ -624,13 +626,14 @@ void ConsoleView::DeleteLine()
 {
 	if (this->p_cur_position_->x == 0 && this->p_cur_position_->y != 0)
 	{
-		if (this->p_symbol_map_->operator[](this->p_cur_position_->y - 1)[1] == winparam::weight+1)
+		if (this->p_symbol_map_->operator[](this->p_cur_position_->y - 1)[1] == winparam::width+1)
 		{
 			return;
 		}
-		if (this->p_cur_position_->y < this->p_symbol_map_->size()-1)
+		if (this->p_cur_position_->y < static_cast<int>(this->p_symbol_map_->size())-1)
 		{
-			if (this->p_symbol_map_->operator[](this->p_cur_position_->y + 1)[1] + this->p_symbol_map_->operator[](this->p_cur_position_->y)[1] >= winparam::weight)
+			int check_sum = this->p_symbol_map_->operator[](this->p_cur_position_->y + 1)[1] + this->p_symbol_map_->operator[](this->p_cur_position_->y)[1];
+			if (check_sum >= winparam::width)
 			{
 				return;
 			}
@@ -745,12 +748,12 @@ MyString ConsoleView::GetMyString()
 			}
 			string_.Insert(x - pan::read_begin, 1, static_cast<char>(sym));
 			++x;
-			if (x == winparam::weight -1)
+			if (x == winparam::width -1)
 			{
 				break;
 			}
 		}
-		if (string_.Length() <= x - pan::read_begin)
+		if (string_.Length() <= static_cast<size_t>(x - pan::read_begin))
 		{
 			this->tui_object->MvwprintPannel(y, x, ' ');
 		}
@@ -812,13 +815,13 @@ void ConsoleView::NewString(MyString& text)
 	this->tui_object->WMove(y, 0);
 	this->tui_object->ClrToBot();
 	bool special = false;
-	if (y != 0) //условие того что не первая линия
+	if (y != 0)// condition that it is not the first line
 	{
-		if (x == 0)// гарантирует то что в начале линнии
+		if (x == 0)// guarantees that at the beginning of the line
 		{
-			if (this->p_symbol_map_->operator[](y - 1)[1] == winparam::weight) //гарантирует то что прошлая строка не закончилась
+			if (this->p_symbol_map_->operator[](y - 1)[1] == winparam::width) // makes sure the previous line is not over
 			{
-				if (this->index_ == text.Length()-1)//гарантирует то что крайняя позиция консоли
+				if (this->index_ == text.Length()-1) // makes sure the end position of the console
 				{
 					special = true;
 				}
@@ -900,9 +903,9 @@ void ConsoleView::CountAndCreateLines(MyString& text)
 	int x = 0;
 	for (size_t i = 0; i < length; i++)
 	{
-		if (text[i] == '\n' || x == winparam::weight)
+		if (text[i] == '\n' || x == winparam::width)
 		{
-			if (text[i] != '\n' || x != winparam::weight+1)
+			if (text[i] != '\n' || x != winparam::width+1)
 			{
 				std::vector<int> new_line = this->CreateNewLine();
 				this->p_symbol_map_->emplace_back(new_line);
@@ -950,7 +953,7 @@ void ConsoleView::SetToBeginString(MyString& text)
 		return;
 	}
 	int cur_index = this->p_symbol_map_->operator[](y - 1)[0] + this->p_symbol_map_->operator[](y - 1)[1];
-	while (y != 0 && this->p_symbol_map_->operator[](y-1)[1] == winparam::weight && text[cur_index] != '\n')
+	while (y != 0 && this->p_symbol_map_->operator[](y-1)[1] == winparam::width && text[cur_index] != '\n')
 	{
 		--y;
 		cur_index = this->p_symbol_map_->operator[](y - 1)[0] + this->p_symbol_map_->operator[](y - 1)[1];
@@ -966,7 +969,7 @@ void ConsoleView::SetToEndString(MyString& text)
 	this->after_beg_str_ = true;
 	int y = this->p_cur_position_->y;
 	int cur_index = this->p_symbol_map_->operator[](y)[0] + this->p_symbol_map_->operator[](y)[1];
-	while (y != this->p_last_position_->y && this->p_symbol_map_->operator[](y)[1] == winparam::weight && text[cur_index] != '\n')
+	while (y != this->p_last_position_->y && this->p_symbol_map_->operator[](y)[1] == winparam::width && text[cur_index] != '\n')
 	{
 		++y;
 		cur_index = this->p_symbol_map_->operator[](y)[0] + this->p_symbol_map_->operator[](y)[1];
@@ -986,7 +989,7 @@ void ConsoleView::DeleteStringPrep(MyString& text, const int index)
 	int y = this->p_cur_position_->y;
 	this->SetToEndString(text);
 	this->p_cur_position_->x = this->p_symbol_map_->operator[](y)[1] - 1;
-	if (this->p_cur_position_->x >= winparam::weight)
+	if (this->p_cur_position_->x >= winparam::width)
 	{
 		this->NextCursorPos(this->p_cur_position_->y, this->p_cur_position_->x);
 	}
@@ -994,10 +997,10 @@ void ConsoleView::DeleteStringPrep(MyString& text, const int index)
 	this->tui_object->PRefresh();
 	if (this->p_cur_position_->x == 0 && y != this->p_cur_position_->y)
 	{
-		if (y!= 0 &&this->p_symbol_map_->operator[](y - 1)[1] == winparam::weight+1)
+		if (y!= 0 &&this->p_symbol_map_->operator[](y - 1)[1] == winparam::width +1)
 		{
 			this->p_cur_position_->y = y - 1;
-			this->p_cur_position_->x = winparam::weight - 1;
+			this->p_cur_position_->x = winparam::width - 1;
 		}
 	}
 	this->index_ = index;
@@ -1014,7 +1017,7 @@ void ConsoleView::ChangeCurFileName(MyString& file_name)
 }
 
 /*
-Функция изменяет cur_y основываясь на новой позиции в тексте.
+The function changes cur_y based on the new position in the text.
 */
 
 void ConsoleView::SetCurYByIndex(MyString& text, const int index)
