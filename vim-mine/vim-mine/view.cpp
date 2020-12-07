@@ -558,7 +558,7 @@ void ConsoleView::PrintScreen(MyString& text, const bool new_string, int index)
 	{
 		idx = 0;
 	}
-	this->tui_object->PRefresh();
+	//this->tui_object->PRefresh();
 	for (size_t i = static_cast<size_t>(idx); i < length; i++)
 	{
 		if (text[i] != '\n')
