@@ -270,7 +270,7 @@ void ConsoleView::KeyUp()
 	}
 	else
 	{
-		if (this->p_symbol_map_->operator[](this->p_cur_position_->y)[1] < this->p_cur_position_->x)
+		if (this->p_symbol_map_->operator[](this->p_cur_position_->y)[1] <= this->p_cur_position_->x)
 		{
 			this->p_cur_position_->x = this->p_symbol_map_->operator[](this->p_cur_position_->y)[1] - 1;
 		}
