@@ -4,18 +4,29 @@ AdapterPDCur::AdapterPDCur()
 {
 	this->screen_ = nullptr;
 	this->pad_ = nullptr;
+	this->pannel_ = nullptr;
 	this->offset_x_ = 0;
 	this->offset_y_ = 0;
 }
 
 AdapterPDCur::~AdapterPDCur()
 {
-
+	this->DeleteWin();
+	this->screen_ = nullptr;
+	this->pad_ = nullptr;
+	this->pannel_ = nullptr;
+	this->offset_x_ = 0;
+	this->offset_y_ = 0;
 }
 
 int AdapterPDCur::WMove(const int y, const int x)
 {
 	return wmove(this->pad_, y, x);
+}
+
+int AdapterPDCur::WPanMove(const int y, const int x)
+{
+	return wmove(this->pannel_, y, x);
 }
 
 
@@ -31,22 +42,11 @@ int AdapterPDCur::MvwPrintw(int y, int x, char sym)
 	return 0;
 }
 
-int AdapterPDCur::Box(const chtype symbol_hieght, const chtype symbol_weight)
-{
-	return box(this->pad_, symbol_hieght, symbol_weight);
-}
 
-int AdapterPDCur::WBorder(const chtype left_side, const chtype right_side, const chtype top_side,
-	const chtype bottom_side, const chtype top_left_hand, const chtype top_right_hand, const chtype bottom_left, const chtype bottom_right)
-{
-	return wborder(this->pad_, left_side, right_side, top_side,
-		 bottom_side, top_left_hand, top_right_hand, bottom_left, bottom_right);
-}
 
-int AdapterPDCur::Raw()
-{
-	return raw();
-}
+
+
+
 
 int AdapterPDCur::GetYX(int &y, int &x)
 {
@@ -85,21 +85,26 @@ int AdapterPDCur::GetCh()
 
 int AdapterPDCur::PRefresh()
 {
-	return prefresh(this->pad_, this->offset_y_, 0, this->offset_x_, 0, winparam::height, winparam::weight);
+	return prefresh(this->pad_, this->offset_y_, 0, this->offset_x_, 0, winparam::height, winparam::width);
 }
 
 int AdapterPDCur::DeleteWin()
 {
-	return delwin(this->pad_);
+	wmove(this->pannel_, 0, 0);
+	wmove(this->pad_, 0, 0);
+	wclrtobot(this->pad_);
+	wclrtobot(this->pannel_);
+	this->PRefresh();
+	this->WRefresh();
+	delwin(this->pad_);
+	delwin(this->pannel_);
+	delwin(this->screen_);
+	return 0;
 }
 
 
 
-void AdapterPDCur::HidePanelPosition()
-{
-	this->WMove(winparam::height, 0);
-	this->ClrToBot();
-}
+
 
 int AdapterPDCur::ClrToBot()
 {
@@ -136,38 +141,31 @@ bool AdapterPDCur::ChangeOffsetY(int change_)
 	return false;
 }
 
-/*bool AdapterPDCur::DownCursor(bool to_begin_string, int& y, int& x)
+int AdapterPDCur::MvwPtintInt(int y, int x, int value)
 {
-	if (y - this->offset_y_ == winparam::height - 1)
-	{
-		this->ChangeOffsetY(1);
-	}
-	++y;
-	if (to_begin_string)
-	{
-		x = 0;
-	}
-	return false;
+	mvwprintw(this->pannel_, y, x, "%d", value);
+	return 0;
 }
 
-bool AdapterPDCur::UpCursor(bool to_begin_string, int& y, int& x)
+bool AdapterPDCur::NewWin(int height, int width, int start_y, int start_x)
 {
-	if (y != 0)
+	this->pannel_ = newwin(height, width, start_y, start_x);
+	if (this->pannel_ == nullptr)
 	{
-		if (y - this->offset_y_ == 0)
-		{
-			ChangeOffsetY(-1);
-		}
-		--y;
-		if (to_begin_string)
-		{
-			x = winparam::weight-1;
-		}
+		return false;
 	}
-	return false;
-}*/
+	return true;
+}
 
+void AdapterPDCur::WRefresh()
+{
+	wrefresh(this->pannel_);
+}
 
+void AdapterPDCur::ClearPannel()
+{
+	wclear(this->pannel_);
+}
 
 
 
@@ -201,7 +199,18 @@ WINDOW* AdapterPDCur::GetWindow()
 	return this->pad_;
 }
 
-WINDOW* AdapterPDCur::GetPod()
+WINDOW* AdapterPDCur::GetPad()
 {
 	return this->pad_;
+}
+
+
+int AdapterPDCur::Mvwscanf(int y, int x)
+{
+	return mvwgetch(this->pannel_, y, x);
+}
+
+void AdapterPDCur::MvwprintPannel(int y, int x, char sym)
+{
+	mvwprintw(this->pannel_, y, x, "%c", sym);
 }

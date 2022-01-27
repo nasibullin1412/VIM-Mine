@@ -9,6 +9,7 @@ public:
 	~Position();
 	bool operator==(const Position& position);
 	bool operator!=(const Position& position);
+	Position& operator=(const Position& sec_position);
 	int x = 0;
 	int y = 0;
 

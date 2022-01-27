@@ -841,44 +841,26 @@ void MyString::Insert(const unsigned int index, const char *string)
 			++size_string;
 		}
 		unsigned int new_size_string = size + size_string + 1;
-		if (new_size_string >= this->capacity_)
-		{
 
-			char *temp = new char[new_size_string];
-			for (unsigned int i = 0; i < index; ++i)
-			{
-				temp[i] = this->string_[i];
-			}
-			for (unsigned int i = 0; i < size_string; ++i)
-			{
-				temp[index + i] = string[i];
-			}
-			unsigned int sum = index + size_string;
-			unsigned int count_string = index;
-			unsigned int delta = size - index;
-			for (unsigned int i = 0; i < delta; ++i)
-			{
-				temp[sum + i] = this->string_[count_string + i];
-			}
-			temp[size + size_string] = '\0';
-			*this = temp;
-			delete[] temp;
-		}
-		else
+		char* temp = new char[new_size_string];
+		for (unsigned int i = 0; i < index; ++i)
 		{
-			unsigned int sum = index + size_string;
-			unsigned int count_string = index;
-			unsigned int delta = size - index;
-			for (unsigned int i = 0; i < delta; ++i)
-			{
-				this->string_[sum + i] = this->string_[count_string + i];
-			}
-			this->string_[size + size_string] = '\0';
-			for (unsigned int i = 0; i < size_string; ++i)
-			{
-				this->string_[index + i] = string[i];
-			}
+			temp[i] = this->string_[i];
 		}
+		for (unsigned int i = 0; i < size_string; ++i)
+		{
+			temp[index + i] = string[i];
+		}
+		unsigned int sum = index + size_string;
+		unsigned int count_string = index;
+		unsigned int delta = size - index;
+		for (unsigned int i = 0; i < delta; ++i)
+		{
+			temp[sum + i] = this->string_[count_string + i];
+		}
+		temp[size + size_string] = '\0';
+		*this = temp;
+		delete[] temp;
 	}
 }
 

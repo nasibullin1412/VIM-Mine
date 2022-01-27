@@ -27,3 +27,10 @@ bool Position::operator!=(const Position& position)
 	return !(*this == position);
 }
 
+Position& Position::operator=(const Position& sec_position)
+{
+	this->x = sec_position.x;
+	this->y = sec_position.y;
+	return *this;
+}
+

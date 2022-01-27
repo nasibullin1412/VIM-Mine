@@ -12,7 +12,7 @@ public:
     Controller(std::vector<MainMode*>* model);
     ~Controller();
 
-    bool          InfoController(const int index, const char symbol);
+    ModeType          InfoController(const int index, MyString &command);
 private:
     std::vector<MainMode*>*     model_;
     MyString                    command_;
